@@ -1,9 +1,11 @@
 // src/handlers/globalHandler.ts
 import { Request, Response } from "express";
-import axios from "axios";
 import { PrismaClient } from "@prisma/client";
+import { sendMessage } from "../utils/utils";
 
 const prisma = new PrismaClient({});
+
+
 
 const globalHandler = async (req: Request, res: Response) => {
     // check if the request body has a message object
@@ -21,17 +23,7 @@ const globalHandler = async (req: Request, res: Response) => {
     switch (messageText) {
         case "/start":
             if (chatTitle === undefined || chatTitle === null) {
-                return axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
-                    chat_id: chatId,
-                    text: `Cashshare Bot cannot be initialized for this chat!`,
-                    parse_mode:'HTML'
-                })
-                    .then((response) => {
-                        res.send(response.data);
-                    })
-                    .catch((error) => {
-                        res.send(error);
-            });
+                return sendMessage(chatId, res, "Cashshare Bot can only be initialized in a group chat!");
             }
             // check if group exists in database
             const group = await prisma.group.findUnique({
@@ -43,19 +35,8 @@ const globalHandler = async (req: Request, res: Response) => {
 
             // if group exists, return a message to the user
             if (group) {
-                return axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
-                    chat_id: chatId,
-                    text: `Cashshare Bot already initialized for <i>${chatTitle}</i>!`,
-                    parse_mode:'HTML'
-                })
-                    .then((response) => {
-                        res.send(response.data);
-                    })
-                    .catch((error) => {
-                        res.send(error);
-                    });
+                return sendMessage(chatId, res, `Cashshare Bot is already initialized for <i>${chatTitle}</i>!`);
             }
-
             // add the chatId to database Group table
             await prisma.group.create({
                 data: {
@@ -64,42 +45,30 @@ const globalHandler = async (req: Request, res: Response) => {
                 }
             });
 
-            return axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
-                chat_id: chatId,
-                text: `Welcome to Cashshare Bot! Initialised Cashshare for <i>${chatTitle}</i>!`,
-                parse_mode:'HTML'
-            })
-                .then((response) => {
-                    res.send(response.data);
-                })
-                .catch((error) => {
-                    res.send(error);
-                });
-            break;
+            return sendMessage(chatId, res, `Welcome to Cashshare Bot! Initialised Cashshare for <i>${chatTitle}</i>!`);
+
         case "/help":
-            return axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
-                chat_id: chatId,
-                text: "Here are the available commands: /start, /help"
-            })
-                .then((response) => {
-                    res.send(response.data);
-                })
-                .catch((error) => {
-                    res.send(error);
-                });
+            return sendMessage(chatId, res, "Available commands: \n/start - Initialize Cashshare Bot for the group \n/add - Add an expense \n/settle - Settle an expense \n/balance - Check the balance");
+
+        case "/add":
+            // format: /add <amount> <description> <people>
+            const messageArray = messageText.split(" ");
+            if (messageArray.length < 4) {
+                return sendMessage(chatId, res, "Invalid format! Please use /add [amount] [description] [people]");
+            }
+            const amount = parseFloat(messageArray[1]);
+            const description = messageArray[2];
+            const people = messageArray.slice(3);
+            // check if all people are valid, with @ prefix
+            const peopleList = people.filter((person: string) => person.startsWith("@"));
+
+            // if not all people are valid, return an error message
+            if (peopleList.length !== people.length) {
+                return sendMessage(chatId, res, "Invalid format! Please use @username for all users involved.");
+            }
             break;
         default:
-            return axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
-                chat_id: chatId,
-                text: "Command not recognized. Please use /help to see the available commands."
-            })
-                .then((response) => {
-                    res.send(response.data);
-                })
-                .catch((error) => {
-                    res.send(error);
-                });
-            break;
+            return sendMessage(chatId, res, "Command not recognized. Please use /help to see the available commands.");
     }
     return;
 };
