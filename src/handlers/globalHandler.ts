@@ -16,9 +16,6 @@ const globalHandler = async (req: Request, res: Response) => {
     const messageArray = messageText.split(" ");
     const messageSender = req.body.message.from.username;
 
-    console.log(messageText);
-    console.log(messageArray);
-
     switch (messageArray[0]) {
         case "/start":
             return await startHandler(chatTitle, chatId, res);

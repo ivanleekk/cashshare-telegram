@@ -1,6 +1,6 @@
 import {Response} from "express";
-import {sendMessage} from "../utils/utils";
-import { PrismaClient } from "@prisma/client";
+import {findUser_byUsername, sendMessage} from "../utils/utils";
+import {PrismaClient} from "@prisma/client";
 
 const prisma = new PrismaClient({});
 
@@ -25,7 +25,7 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
 
     // remove duplicates from the payer list
     payerList = [...new Set(payerList)];
-    console.log(payerList);
+
     // check if group exists in database
     const group = await prisma.group.findUnique({
         where: {
@@ -60,6 +60,33 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
         users.push(user)
     }
 
+    // if not all users are in the UserGroupBalance table, add them
+    for (const user of users) {
+        const userGroupBalance = await prisma.userGroupBalance.findFirst({
+            where: {
+                userId: user.id,
+                groupId: chatId.toString()
+            }
+        });
+        if (!userGroupBalance) {
+            await prisma.userGroupBalance.create({
+                data: {
+                    user: {
+                        connect: {
+                            id: user.id
+                        }
+                    },
+                    group: {
+                        connect: {
+                            id: chatId.toString()
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // update the group with the new users and create a UserGroupBalance for each user
     await prisma.group.update({
         where: {
             id: chatId.toString()
@@ -73,6 +100,10 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
 
     // add the transaction to the database
     // by default, the payee is the user who added the expense
+    const payee = await findUser_byUsername(`@${messageSender}`);
+    if (!payee) {
+        return sendMessage(chatId, res, "Error adding expense! Please try again.");
+    }
     await prisma.transaction.create({
         data: {
             amount: amount,
@@ -84,7 +115,7 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
             },
             payee: {
                 connect: {
-                    id: users[0].id
+                    id: payee.id
                 }
             },
             payer: {
@@ -93,5 +124,43 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
         }
     });
 
-    return sendMessage(chatId, res, `Added expense of ${amount} for ${description} for ${payerList.join(", ")}!`);
+    // add the expense to the UserGroupBalance table
+    const amountPerPerson = amount / payerList.length;
+    for (const person of payerList) {
+        const user = await findUser_byUsername(person);
+        if (!user) {
+            return sendMessage(chatId, res, "Error adding expense! Please try again.");
+        }
+        if (user.id === payee.id) {
+            await prisma.userGroupBalance.update({
+                where: {
+                    userId_groupId: {
+                        userId: user.id,
+                        groupId: chatId.toString()
+                    }
+                },
+                data: {
+                    balance: {
+                        decrement: amount - amountPerPerson
+                    }
+                }
+            });
+            continue;
+        }
+        await prisma.userGroupBalance.update({
+            where: {
+                userId_groupId: {
+                    userId: user.id,
+                    groupId: chatId.toString()
+                }
+            },
+            data: {
+                balance: {
+                    increment: amountPerPerson
+                }
+            }
+        });
+    }
+
+    return sendMessage(chatId, res, `Added expense of \$${amount} for ${description} for ${payerList.join(", ")}!`);
 }
