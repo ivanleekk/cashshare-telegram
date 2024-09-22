@@ -14,22 +14,33 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model User {
+  id                String        @id @default(uuid())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  username          String        @unique
+  transactionsPayee Transaction[] @relation("PayeeTransactions")
+  transactionsPayer Transaction[] @relation("PayerTransactions")
+  groups            Group[]       @relation("UserGroups")
+}
+
 model Transaction {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  amount    Float
-  payer     String[]
-  payee     String[]
-  group     Group    @relation(fields: [groupId], references: [id])
-  groupId   String
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  amount      Float
+  payer       User[]   @relation("PayerTransactions")
+  payee       User[]   @relation("PayeeTransactions")
+  group       Group    @relation(fields: [groupId], references: [id])
+  groupId     String
+  description String
 }
 
 model Group {
-  id          String        @id
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  name        String
-  members     String[]
-  Transaction Transaction[]
+  id           String        @id
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  name         String
+  members      User[]        @relation("UserGroups")
+  transactions Transaction[]
 }
