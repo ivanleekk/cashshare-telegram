@@ -4,6 +4,7 @@ import { sendMessage } from "../utils/utils";
 import {startHandler} from "./startHandler";
 import {addHandler} from "./addHandler";
 import {groupBalanceHandler, individualBalanceHandler} from "./BalanceHandler";
+import {payHandler} from "./payHandler";
 
 const globalHandler = async (req: Request, res: Response) => {
     // check if the request body has a message object
@@ -31,6 +32,9 @@ const globalHandler = async (req: Request, res: Response) => {
 
         case "/groupbalance":
             return await groupBalanceHandler(chatId, res);
+
+        case "/pay":
+            return await payHandler(messageArray, chatId, res, messageSender);
 
         default:
             return sendMessage(chatId, res, "Command not recognized. Please use /help to see the available commands.");
