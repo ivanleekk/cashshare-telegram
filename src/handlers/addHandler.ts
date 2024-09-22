@@ -162,5 +162,20 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
         });
     }
 
+    // add validation that the sum of all userGroupBalances is 0
+    const userGroupBalances = await prisma.userGroupBalance.findMany({
+        where: {
+            groupId: chatId.toString()
+        }
+    });
+    let sum = 0;
+    for (const userGroupBalance of userGroupBalances) {
+        sum += userGroupBalance.balance;
+    }
+    if (sum !== 0) {
+        return sendMessage(chatId, res, "Expenses do not add up! Please check the amounts and try again.");
+    }
+
+
     return sendMessage(chatId, res, `Added expense of \$${amount} for ${description} for ${payerList.join(", ")}!`);
 }

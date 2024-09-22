@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { sendMessage } from "../utils/utils";
 import {startHandler} from "./startHandler";
 import {addHandler} from "./addHandler";
-import {balanceHandler} from "./balanceHandler";
+import {groupBalanceHandler, individualBalanceHandler} from "./BalanceHandler";
 
 const globalHandler = async (req: Request, res: Response) => {
     // check if the request body has a message object
@@ -27,7 +27,10 @@ const globalHandler = async (req: Request, res: Response) => {
             return await addHandler(messageArray, chatId, res, messageSender);
 
         case "/balance":
-            return await balanceHandler(chatId, res, messageSender);
+            return await individualBalanceHandler(chatId, res, messageSender);
+
+        case "/groupbalance":
+            return await groupBalanceHandler(chatId, res);
 
         default:
             return sendMessage(chatId, res, "Command not recognized. Please use /help to see the available commands.");
