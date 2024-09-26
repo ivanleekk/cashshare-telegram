@@ -1,8 +1,6 @@
 import {Response} from "express";
 import {findUser_byUsername, sendMessage} from "../utils/utils";
-import {PrismaClient} from "@prisma/client";
-
-const prisma = new PrismaClient({});
+import prisma from "../../libs/prisma";
 
 export async function addHandler(messageArray: string[], chatId: String, res: Response<any, any>, messageSender: String) {
     // format: /add <amount> <description> <people>

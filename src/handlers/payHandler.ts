@@ -1,8 +1,7 @@
 import {Response} from "express";
 import {findUser_byUsername, sendMessage} from "../utils/utils";
-import {PrismaClient} from "@prisma/client";
+import prisma from "../../libs/prisma";
 
-const prisma = new PrismaClient({});
 
 export async function payHandler(messageArray: string[], chatId: String, res: Response<any, any>, messageSender: String) {
     // format: /pay <amount> <payee>

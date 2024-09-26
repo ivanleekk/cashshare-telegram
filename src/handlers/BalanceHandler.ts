@@ -1,8 +1,7 @@
 import {findUser_byUsername, sendMessage} from "../utils/utils";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../../libs/prisma";
 import {Response} from "express";
 
-const prisma = new PrismaClient({});
 
 export async function individualBalanceHandler(chatId: String, res: Response<any, any>, messageSender: String) {
     // check if user exists in user group balance table

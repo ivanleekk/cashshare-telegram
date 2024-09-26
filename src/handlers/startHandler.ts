@@ -1,8 +1,7 @@
 import {Response} from "express";
 import {sendMessage} from "../utils/utils";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../../libs/prisma";
 
-const prisma = new PrismaClient({});
 
 export async function startHandler(chatTitle: string, chatId: string, res: Response<any,any>) {
     if (chatTitle === undefined || chatTitle === null) {
