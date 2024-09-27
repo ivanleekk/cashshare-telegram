@@ -5,6 +5,7 @@ import {startHandler} from "./startHandler";
 import {addHandler} from "./addHandler";
 import {groupBalanceHandler, individualBalanceHandler} from "./BalanceHandler";
 import {payHandler} from "./payHandler";
+import {transactionsHandler} from "./transactionsHandler";
 
 const globalHandler = async (req: Request, res: Response) => {
     // check if the request body has a message object
@@ -22,7 +23,13 @@ const globalHandler = async (req: Request, res: Response) => {
             return await startHandler(chatTitle, chatId, res);
 
         case "/help":
-            return sendMessage(chatId, res, "Available commands: \n/start - Initialize Cashshare Bot for the group \n/add - Add an expense \n/settle - Settle an expense \n/balance - Check the balance");
+            return sendMessage(chatId, res, "Available commands: \n" +
+                "/start - Initialize Cashshare Bot for the group \n" +
+                "/add - Add an expense \n" +
+                "/pay - Pay back your friends \n" +
+                "/balance - Check the balance\n" +
+                "/groupbalance - Check the group balance\n" +
+                "/transactions - Check the transactions\n");
 
         case "/add":
             return await addHandler(messageArray, chatId, res, messageSender);
@@ -35,6 +42,9 @@ const globalHandler = async (req: Request, res: Response) => {
 
         case "/pay":
             return await payHandler(messageArray, chatId, res, messageSender);
+
+        case "/transactions":
+            return await transactionsHandler(chatId, res);
 
         default:
             return sendMessage(chatId, res, "Command not recognized. Please use /help to see the available commands.");

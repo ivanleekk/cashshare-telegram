@@ -14,6 +14,11 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum TransactionType {
+  NEW_EXPENSE
+  REPAYMENT
+}
+
 model User {
   id                String             @id @default(uuid())
   createdAt         DateTime           @default(now())
@@ -26,15 +31,16 @@ model User {
 }
 
 model Transaction {
-  id          String   @id @default(uuid())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String          @id @default(uuid())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   amount      Float
-  payer       User[]   @relation("PayerTransactions")
-  payee       User[]   @relation("PayeeTransactions")
-  group       Group    @relation(fields: [groupId], references: [id])
+  payer       User[]          @relation("PayerTransactions")
+  payee       User[]          @relation("PayeeTransactions")
+  group       Group           @relation(fields: [groupId], references: [id])
   groupId     String
   description String
+  type        TransactionType // "expense" or "income"
 }
 
 model Group {
