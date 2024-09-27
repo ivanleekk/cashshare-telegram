@@ -22,7 +22,7 @@ export async function transactionsHandler(chatId: string, res: Response<any,any>
     transactions.forEach(transaction => {
         const payers = transaction.payer.map(payer => payer.username.toString()).join(", ");
         const payees = transaction.payee.map(payee => payee.username.toString()).join(", ");
-        message += `From: ${payers} To: ${payees} Amount: ${transaction.amount} Description: ${transaction.description}\n`;
+        message += `Type: ${transaction.type} \nFrom: ${payers} To: ${payees} \nAmount: \$${transaction.amount} Description: ${transaction.description}\n\n`;
     });
     return sendMessage(chatId, res, message);
 }
