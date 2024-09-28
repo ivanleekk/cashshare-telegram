@@ -4,10 +4,10 @@ import {PrismaClient} from "@prisma/client";
 
 const prisma = new PrismaClient({});
 
-export async function addHandler(messageArray: string[], chatId: String, res: Response<any, any>, messageSender: String) {
+export async function addHandler(messageArray: string[], chatId: string, messageSender: String) {
     // format: /add <amount> <description> <people>
     if (messageArray.length < 4) {
-        return sendMessage(chatId, res, "Invalid format! Please use /add [amount] [description] [people]");
+        return sendMessage(chatId, "Invalid format! Please use /add [amount] [description] [people]");
     }
     const amount = parseFloat(messageArray[1]);
     // find the index with @ prefix
@@ -22,7 +22,7 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
 
     // if not all people are valid, return an error message
     if (payerList.length !== payers.length + 1) {
-        return sendMessage(chatId, res, "Invalid format! Please use @username for all users involved.");
+        return sendMessage(chatId, "Invalid format! Please use @username for all users involved.");
     }
 
     // remove duplicates from the payer list
@@ -40,7 +40,7 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
 
     // if group does not exist, return an error message
     if (!group) {
-        return sendMessage(chatId, res, "Cashshare Bot is not initialized for this group! Use /start to initialize.");
+        return sendMessage(chatId, "Cashshare Bot is not initialized for this group! Use /start to initialize.");
     }
     // check if all users are part of the group
     const users = [];
@@ -104,7 +104,7 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
     // by default, the payee is the user who added the expense
     const payee = await findUser_byUsername(`@${messageSender}`);
     if (!payee) {
-        return sendMessage(chatId, res, "Error adding expense! Please try again.");
+        return sendMessage(chatId, "Error adding expense! Please try again.");
     }
     await prisma.transaction.create({
         data: {
@@ -131,8 +131,9 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
     const amountPerPerson = amount / payerList.length;
     for (const person of payerList) {
         const user = await findUser_byUsername(person);
+        console.log(user);
         if (!user) {
-            return sendMessage(chatId, res, "Error adding expense! Please try again.");
+            return sendMessage(chatId, "Error adding expense! Please try again.");
         }
         if (user.id === payee.id) {
             await prisma.userGroupBalance.update({
@@ -173,5 +174,5 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
     });
 
 
-    return sendMessage(chatId, res, `Added expense of \$${amount} for ${description} for ${payerList.join(", ")}!`);
+    return sendMessage(chatId, `Added expense of \$${amount} for ${description} for ${payerList.join(", ")}!`);
 }

@@ -4,11 +4,11 @@ import {Response} from "express";
 
 const prisma = new PrismaClient({});
 
-export async function individualBalanceHandler(chatId: String, res: Response<any, any>, messageSender: String) {
+export async function individualBalanceHandler(chatId: string, messageSender: String) {
     // check if user exists in user group balance table
     const user = await findUser_byUsername(`@${messageSender}`);
     if (!user) {
-        return sendMessage(chatId, res, "You are not part of this group!");
+        return sendMessage(chatId, "You are not part of this group!");
     }
     const userBalance = await prisma.userGroupBalance.findUnique({
         where: {
@@ -20,15 +20,15 @@ export async function individualBalanceHandler(chatId: String, res: Response<any
     });
 
     if (!userBalance) {
-        return sendMessage(chatId, res, "You have no balance in this group!");
+        return sendMessage(chatId, "You have no balance in this group!");
     }
 
     // get the user's balance
     const balance = userBalance.balance;
-    return sendMessage(chatId, res, `Your balance in this group is \$${balance.toFixed(2)}`);
+    return sendMessage(chatId, `Your balance in this group is \$${balance.toFixed(2)}`);
 }
 
-export async function groupBalanceHandler(chatId: String, res: Response<any, any>) {
+export async function groupBalanceHandler(chatId: string) {
     const group = await prisma.group.findUnique({
         where: {
             id: chatId.toString()
@@ -39,7 +39,7 @@ export async function groupBalanceHandler(chatId: String, res: Response<any, any
     });
 
     if (!group) {
-        return sendMessage(chatId, res, "Group not found!");
+        return sendMessage(chatId, "Group not found!");
     }
 
     // get the balance per user in the group
@@ -60,5 +60,5 @@ export async function groupBalanceHandler(chatId: String, res: Response<any, any
         return { username: member.username, balance: userBalance.balance };
     }));
 
-    return sendMessage(chatId, res, `The group balance is \n${groupBalance.map((user) => `${user.username}: \$${user.balance.toFixed(2)}`).join("\n")}`);
+    return sendMessage(chatId, `The group balance is \n${groupBalance.map((user) => `${user.username}: \$${user.balance.toFixed(2)}`).join("\n")}`);
 }

@@ -4,7 +4,7 @@ import {PrismaClient} from "@prisma/client";
 
 const prisma = new PrismaClient({});
 
-export async function payHandler(messageArray: string[], chatId: String, res: Response<any, any>, messageSender: String) {
+export async function payHandler(messageArray: string[], chatId: string, messageSender: String) {
     // format: /pay <amount> <payee>
     const group = await prisma.group.findUnique({
         where: {
@@ -12,22 +12,22 @@ export async function payHandler(messageArray: string[], chatId: String, res: Re
         }
     });
     if (!group) {
-        return sendMessage(chatId, res, "Group not found!");
+        return sendMessage(chatId, "Group not found!");
     }
 
     if (messageArray.length != 3) {
-        return sendMessage(chatId, res, "Invalid format! Please use /pay [amount] [payee]");
+        return sendMessage(chatId, "Invalid format! Please use /pay [amount] [payee]");
     }
     const amount = parseFloat(messageArray[1]);
     const payee = await findUser_byUsername(messageArray[2]);
     if (!payee) {
-        return sendMessage(chatId, res, "Payee not found!");
+        return sendMessage(chatId, "Payee not found!");
     }
 
     // add this as a transaction in the database
     const user = await findUser_byUsername(`@${messageSender}`);
     if (!user) {
-        return sendMessage(chatId, res, "You are not part of this group!");
+        return sendMessage(chatId, "You are not part of this group!");
     }
 
     await prisma.transaction.create({
@@ -82,6 +82,6 @@ export async function payHandler(messageArray: string[], chatId: String, res: Re
             }
         }
     });
-    return sendMessage(chatId, res, `Successfully paid ${amount} to ${messageArray[2]}`);
+    return sendMessage(chatId, `Successfully paid ${amount} to ${messageArray[2]}`);
 
 }
