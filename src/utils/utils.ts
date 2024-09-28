@@ -3,7 +3,7 @@ import axios from "axios";
 import {Prisma, PrismaClient} from "@prisma/client";
 let prisma = new PrismaClient();
 
-export async function sendMessage(chatId: string, res: Response<any, Record<string, any>>, text: string) {
+export async function sendMessage(chatId: string, text: string) {
     try {
         const response = await axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
             chat_id: chatId,

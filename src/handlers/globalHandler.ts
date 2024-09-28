@@ -14,7 +14,7 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
             body: JSON.stringify({ message: "No message object found in the request body" }),
         };
     }
-    const res = context.res;
+
     const chatId = body.message.chat.id;
     const messageText = body.message.text || "";
     const chatTitle = body.message.chat.title;
@@ -23,10 +23,10 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
 
     switch (messageArray[0]) {
         case "/start":
-            await startHandler(chatTitle, chatId, res);
+            await startHandler(chatTitle, chatId);
             break;
         case "/help":
-            await sendMessage(chatId, res, "Available commands: \n" +
+            await sendMessage(chatId, "Available commands: \n" +
                 "/start - Initialize Cashshare Bot for the group \n" +
                 "/add - Add an expense \n" +
                 "/pay - Pay back your friends \n" +
@@ -35,25 +35,25 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
                 "/transactions - Check the transactions\n");
             break;
         case "/add":
-            await addHandler(messageArray, chatId, res, messageSender);
+            await addHandler(messageArray, chatId, messageSender);
             break;
         case "/balance":
-            await individualBalanceHandler(chatId, res, messageSender);
+            await individualBalanceHandler(chatId, messageSender);
             break;
         case "/groupbalance":
-            await groupBalanceHandler(chatId, res);
+            await groupBalanceHandler(chatId);
             break;
         case "/pay":
-            await payHandler(messageArray, chatId, res, messageSender);
+            await payHandler(messageArray, chatId, messageSender);
             break;
         case "/transactions":
-            await transactionsHandler(chatId, res);
+            await transactionsHandler(chatId);
             break;
         case "/":
-            await sendMessage(chatId, res, "Command not recognized. Please use /help to see the available commands.");
+            await sendMessage(chatId, "Command not recognized. Please use /help to see the available commands.");
             break;
         default:
-            await sendMessage(chatId, res, '');
+            await sendMessage(chatId, '');
             break;
     }
 

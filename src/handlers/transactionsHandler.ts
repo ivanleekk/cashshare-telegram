@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({});
 
-export async function transactionsHandler(chatId: string, res: Response<any,any>) {
+export async function transactionsHandler(chatId: string) {
     // get all transactions for the group
     const transactions = await prisma.transaction.findMany({
         where: {
@@ -16,7 +16,7 @@ export async function transactionsHandler(chatId: string, res: Response<any,any>
         }
     });
     if (transactions.length === 0) {
-        return sendMessage(chatId, res, "No transactions found!");
+        return sendMessage(chatId, "No transactions found!");
     }
     let message = "<b>Transactions:</b>\n";
     transactions.forEach(transaction => {
@@ -24,6 +24,6 @@ export async function transactionsHandler(chatId: string, res: Response<any,any>
         const payees = transaction.payee.map(payee => payee.username.toString()).join(", ");
         message += `Type: ${transaction.type} \nFrom: ${payers} To: ${payees} \nAmount: \$${transaction.amount} Description: ${transaction.description}\n\n`;
     });
-    return sendMessage(chatId, res, message);
+    return sendMessage(chatId, message);
 }
 
