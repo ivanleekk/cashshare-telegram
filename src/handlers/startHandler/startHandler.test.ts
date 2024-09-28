@@ -3,7 +3,7 @@ import { startHandler } from './startHandler';
 import { sendMessage } from '../../utils/utils';
 import { PrismaClient } from '@prisma/client';
 
-vi.mock('../utils/utils', () => ({
+vi.mock('../../utils/utils', () => ({
   sendMessage: vi.fn(),
 }));
 

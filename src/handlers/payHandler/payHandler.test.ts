@@ -3,7 +3,7 @@ import { payHandler } from './payHandler';
 import { sendMessage, findUser_byUsername } from '../../utils/utils';
 import { PrismaClient } from '@prisma/client';
 
-vi.mock('../utils/utils', () => ({
+vi.mock('../../utils/utils', () => ({
   sendMessage: vi.fn(),
   findUser_byUsername: vi.fn(),
 }));

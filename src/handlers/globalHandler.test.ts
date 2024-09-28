@@ -9,11 +9,11 @@ import { payHandler } from './payHandler/payHandler';
 import { transactionsHandler } from './transactionsHandler/transactionsHandler';
 
 vi.mock('../utils/utils');
-vi.mock('./startHandler');
-vi.mock('./addHandler');
-vi.mock('./BalanceHandler');
-vi.mock('./payHandler');
-vi.mock('./transactionsHandler');
+vi.mock('./startHandler/startHandler');
+vi.mock('./addHandler/addHandler');
+vi.mock('./balanceHandler/balanceHandler');
+vi.mock('./payHandler/payHandler');
+vi.mock('./transactionsHandler/transactionsHandler');
 
 describe('globalHandler', () => {
     let event: APIGatewayProxyEvent;
