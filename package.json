@@ -8,7 +8,8 @@
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "test": "dotenv -f .env.testing run vitest",
-    "migrate:testing": "dotenv -f .env.testing run prisma migrate dev"
+    "migrate:testing": "dotenv -f .env.testing run prisma migrate dev",
+    "deploy": "serverless deploy"
   },
   "repository": {
     "type": "git",
