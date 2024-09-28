@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TransactionType {
+  NEW_EXPENSE
+  REPAYMENT
+}
+
+model User {
+  id                String             @id @default(uuid())
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  username          String             @unique
+  transactionsPayee Transaction[]      @relation("PayeeTransactions")
+  transactionsPayer Transaction[]      @relation("PayerTransactions")
+  groups            Group[]            @relation("UserGroups")
+  balances          UserGroupBalance[] // User balances across different groups
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  amount      Float
+  payer       User[]          @relation("PayerTransactions")
+  payee       User[]          @relation("PayeeTransactions")
+  group       Group           @relation(fields: [groupId], references: [id])
+  groupId     String
+  description String
+  type        TransactionType // "expense" or "income"
+}
+
+model Group {
+  id           String             @id
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  name         String
+  members      User[]             @relation("UserGroups")
+  transactions Transaction[]
+  balances     UserGroupBalance[] // Group-specific balances for each user
+}
+
+model UserGroupBalance {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  group     Group    @relation(fields: [groupId], references: [id])
+  groupId   String
+  balance   Float    @default(0) // Balance for this user in this group
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, groupId]) // Ensure a user has only one balance per group
+}

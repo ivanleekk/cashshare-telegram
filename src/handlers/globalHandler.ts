@@ -1,107 +1,64 @@
-// src/handlers/globalHandler.ts
-import { Request, Response } from "express";
-import axios from "axios";
-import { PrismaClient } from "@prisma/client";
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { sendMessage } from '../utils/utils';
+import { startHandler } from './startHandler';
+import { addHandler } from './addHandler';
+import { groupBalanceHandler, individualBalanceHandler } from './BalanceHandler';
+import { payHandler } from './payHandler';
+import { transactionsHandler } from './transactionsHandler';
 
-const prisma = new PrismaClient({});
-
-const globalHandler = async (req: Request, res: Response) => {
-    // check if the request body has a message object
-    if (!req.body.message) {
-        return res.send("No message object found in the request body");
+export const globalHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+    const body = JSON.parse(event.body || '{}');
+    if (!body.message) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ message: "No message object found in the request body" }),
+        };
     }
-    const chatId = req.body.message.chat.id;
-    const messageText = req.body.message.text;
-    const chatTitle = req.body.message.chat.title;
 
-    console.log(messageText);
+    const chatId = body.message.chat.id;
+    const messageText = body.message.text || "";
+    const chatTitle = body.message.chat.title;
+    const messageArray = messageText.split(" ");
+    const messageSender = body.message.from.username;
 
-
-
-    switch (messageText) {
+    switch (messageArray[0]) {
         case "/start":
-            if (chatTitle === undefined || chatTitle === null) {
-                return axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
-                    chat_id: chatId,
-                    text: `Cashshare Bot cannot be initialized for this chat!`,
-                    parse_mode:'HTML'
-                })
-                    .then((response) => {
-                        res.send(response.data);
-                    })
-                    .catch((error) => {
-                        res.send(error);
-            });
-            }
-            // check if group exists in database
-            const group = await prisma.group.findUnique({
-                where: {
-                    id: chatId.toString()
-                }
-            });
-            console.log(group);
-
-            // if group exists, return a message to the user
-            if (group) {
-                return axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
-                    chat_id: chatId,
-                    text: `Cashshare Bot already initialized for <i>${chatTitle}</i>!`,
-                    parse_mode:'HTML'
-                })
-                    .then((response) => {
-                        res.send(response.data);
-                    })
-                    .catch((error) => {
-                        res.send(error);
-                    });
-            }
-
-            // add the chatId to database Group table
-            await prisma.group.create({
-                data: {
-                    id: chatId.toString(),
-                    name: chatTitle,
-                }
-            });
-
-            return axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
-                chat_id: chatId,
-                text: `Welcome to Cashshare Bot! Initialised Cashshare for <i>${chatTitle}</i>!`,
-                parse_mode:'HTML'
-            })
-                .then((response) => {
-                    res.send(response.data);
-                })
-                .catch((error) => {
-                    res.send(error);
-                });
+            await startHandler(chatTitle, chatId);
             break;
         case "/help":
-            return axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
-                chat_id: chatId,
-                text: "Here are the available commands: /start, /help"
-            })
-                .then((response) => {
-                    res.send(response.data);
-                })
-                .catch((error) => {
-                    res.send(error);
-                });
+            await sendMessage(chatId, "Available commands: \n" +
+                "/start - Initialize Cashshare Bot for the group \n" +
+                "/add - Add an expense \n" +
+                "/pay - Pay back your friends \n" +
+                "/balance - Check the balance\n" +
+                "/groupbalance - Check the group balance\n" +
+                "/transactions - Check the transactions\n");
+            break;
+        case "/add":
+            await addHandler(messageArray, chatId, messageSender);
+            break;
+        case "/balance":
+            await individualBalanceHandler(chatId, messageSender);
+            break;
+        case "/groupbalance":
+            await groupBalanceHandler(chatId);
+            break;
+        case "/pay":
+            await payHandler(messageArray, chatId, messageSender);
+            break;
+        case "/transactions":
+            await transactionsHandler(chatId);
+            break;
+        case "/":
+            await sendMessage(chatId, "Command not recognized. Please use /help to see the available commands.");
             break;
         default:
-            return axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
-                chat_id: chatId,
-                text: "Command not recognized. Please use /help to see the available commands."
-            })
-                .then((response) => {
-                    res.send(response.data);
-                })
-                .catch((error) => {
-                    res.send(error);
-                });
+            await sendMessage(chatId, '');
             break;
     }
-    return;
-};
 
-export default globalHandler;
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "Request processed successfully" }),
+    };
+};

@@ -1,0 +1,26 @@
+service: cashshare-telegram-bot
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-southeast-1
+
+package:
+  patterns:
+    - '!node_modules/.prisma/client/query-engine-*'  # Exclude other engines
+    - '!node_modules/.prisma/client/libquery_engine-*'  # Exclude other engines
+    - 'node_modules/.prisma/client/schema.prisma'  # Include Prisma schema
+    - 'node_modules/.prisma/client/query-engine-rhel-openssl-3.0.x'  # Include correct engine
+    - '!node_modules/@prisma/engines'  # Exclude other engines
+
+functions:
+  globalHandler:
+    handler: src/handlers/globalHandler.globalHandler
+    events:
+      - http:
+          path: handler
+          method: post
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-offline
