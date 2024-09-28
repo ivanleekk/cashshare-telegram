@@ -33,6 +33,7 @@ export async function payHandler(messageArray: string[], chatId: String, res: Re
         data: {
             amount: amount,
             description: `Payment from ${user.username} to ${payee.username}`,
+            type: "REPAYMENT",
             group: {
                 connect: {
                     id: chatId.toString()

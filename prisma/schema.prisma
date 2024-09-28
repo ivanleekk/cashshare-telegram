@@ -5,13 +5,19 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+enum TransactionType {
+  NEW_EXPENSE
+  REPAYMENT
 }
 
 model User {
@@ -26,15 +32,16 @@ model User {
 }
 
 model Transaction {
-  id          String   @id @default(uuid())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String          @id @default(uuid())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   amount      Float
-  payer       User[]   @relation("PayerTransactions")
-  payee       User[]   @relation("PayeeTransactions")
-  group       Group    @relation(fields: [groupId], references: [id])
+  payer       User[]          @relation("PayerTransactions")
+  payee       User[]          @relation("PayeeTransactions")
+  group       Group           @relation(fields: [groupId], references: [id])
   groupId     String
   description String
+  type        TransactionType // "expense" or "income"
 }
 
 model Group {

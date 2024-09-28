@@ -22,6 +22,7 @@
   "homepage": "https://github.com/ivanleekk/cashshare-telegram#readme",
   "dependencies": {
     "@prisma/client": "^5.19.1",
+    "aws-lambda": "^1.0.7",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
@@ -34,6 +35,8 @@
     "@vitest/ui": "^2.1.1",
     "nodemon": "^3.1.5",
     "prisma": "^5.19.1",
+    "serverless-dotenv-plugin": "^6.0.0",
+    "serverless-plugin-typescript": "^2.1.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2",
     "vitest": "^2.1.1",

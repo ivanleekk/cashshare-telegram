@@ -8,8 +8,10 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
         return sendMessage(chatId, res, "Invalid format! Please use /add [amount] [description] [people]");
     }
     const amount = parseFloat(messageArray[1]);
-    const description = messageArray[2];
-    const payers = messageArray.slice(3);
+    // find the index with @ prefix
+    const firstUser: number = messageArray.findIndex((element: string) => element.startsWith("@"));
+    const description = messageArray.slice(2, firstUser).join(" ");
+    const payers = messageArray.slice(firstUser);
     // check if all people are valid, with @ prefix
     let payerList = payers.filter((person: string) => person.startsWith("@"));
 
@@ -39,7 +41,7 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
         return sendMessage(chatId, res, "Cashshare Bot is not initialized for this group! Use /start to initialize.");
     }
     // check if all users are part of the group
-    const users = group.members;
+    const users = [];
 
     // if not all users are part of the group, add them to the group
     for (const person of payerList) {
@@ -106,6 +108,7 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
         data: {
             amount: amount,
             description: description,
+            type: "NEW_EXPENSE",
             group: {
                 connect: {
                     id: chatId.toString()
@@ -166,13 +169,6 @@ export async function addHandler(messageArray: string[], chatId: String, res: Re
             groupId: chatId.toString()
         }
     });
-    let sum = 0;
-    for (const userGroupBalance of userGroupBalances) {
-        sum += userGroupBalance.balance;
-    }
-    if (sum !== 0) {
-        return sendMessage(chatId, res, "Expenses do not add up! Please check the amounts and try again.");
-    }
 
 
     return sendMessage(chatId, res, `Added expense of \$${amount} for ${description} for ${payerList.join(", ")}!`);
