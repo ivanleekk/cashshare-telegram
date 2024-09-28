@@ -131,6 +131,7 @@ export async function addHandler(messageArray: string[], chatId: string, message
     const amountPerPerson = amount / payerList.length;
     for (const person of payerList) {
         const user = await findUser_byUsername(person);
+        console.log(user);
         if (!user) {
             return sendMessage(chatId, "Error adding expense! Please try again.");
         }
