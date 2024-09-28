@@ -1,6 +1,6 @@
 {
   "name": "cashshare-telegram",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Cashshare Telegram Bot",
   "main": "index.ts",
   "scripts": {
