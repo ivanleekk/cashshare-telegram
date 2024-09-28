@@ -3,18 +3,24 @@ import axios from "axios";
 import {Prisma, PrismaClient} from "@prisma/client";
 let prisma = new PrismaClient();
 
-export async function sendMessage(chatId: String, res: Response<any, Record<string, any>>, text: String) {
+export async function sendMessage(chatId: string, res: Response<any, Record<string, any>>, text: string) {
     try {
         const response = await axios.post(`${process.env.TELEGRAM_BOT_REQUEST_URL}/sendMessage`, {
             chat_id: chatId,
             text: text,
             parse_mode: 'HTML'
         });
-        res.send(response.data);
+        // In Lambda, return the response instead of using res.send()
+        return {
+            statusCode: 200,
+            body: JSON.stringify(response.data),
+        };
     } catch (error) {
-        res.send(error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify(error),
+        };
     }
-    return
 }
 
 export async function findUser_byUsername(username: string) {
