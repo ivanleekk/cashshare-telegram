@@ -46,11 +46,18 @@ describe('BalanceHandler', () => {
       expect(sendMessage).toHaveBeenCalledWith(chatId, 'You have no balance in this group!');
     });
 
-    it('should return the user\'s balance in the group', async () => {
+    it('should return the user\'s balance in the group indicating they owe money', async () => {
       findUser_byUsername.mockResolvedValue({ id: 'user1' });
       prisma.userGroupBalance.findUnique.mockResolvedValue({ balance: 100 });
       await individualBalanceHandler(chatId, messageSender);
-      expect(sendMessage).toHaveBeenCalledWith(chatId, 'Your balance in this group is $100.00');
+      expect(sendMessage).toHaveBeenCalledWith(chatId, 'You owe $100.00');
+    });
+
+    it('should return the user\'s balance in the group indicating they are owed money', async () => {
+      findUser_byUsername.mockResolvedValue({ id: 'user1' });
+      prisma.userGroupBalance.findUnique.mockResolvedValue({ balance: -50 });
+      await individualBalanceHandler(chatId, messageSender);
+      expect(sendMessage).toHaveBeenCalledWith(chatId, 'You are owed $50.00');
     });
   });
 
@@ -61,17 +68,17 @@ describe('BalanceHandler', () => {
       expect(sendMessage).toHaveBeenCalledWith(chatId, 'Group not found!');
     });
 
-    it('should return the group balance', async () => {
+    it('should return the group balance indicating members owe or are owed money', async () => {
       prisma.group.findUnique.mockResolvedValue({
         id: chatId,
         members: [{ id: 'user1', username: 'user1' }, { id: 'user2', username: 'user2' }],
       });
       prisma.userGroupBalance.findUnique
         .mockResolvedValueOnce({ balance: 50 })
-        .mockResolvedValueOnce({ balance: 75 });
+        .mockResolvedValueOnce({ balance: -75 });
 
       await groupBalanceHandler(chatId);
-      expect(sendMessage).toHaveBeenCalledWith(chatId, 'The group balance is \nuser1: $50.00\nuser2: $75.00');
+      expect(sendMessage).toHaveBeenCalledWith(chatId, 'The group balance is \nuser1 owes $50.00\nuser2 is owed $75.00');
     });
 
     it('should handle members with no balance', async () => {
@@ -84,7 +91,7 @@ describe('BalanceHandler', () => {
         .mockResolvedValueOnce({ balance: 75 });
 
       await groupBalanceHandler(chatId);
-      expect(sendMessage).toHaveBeenCalledWith(chatId, 'The group balance is \nuser1: $0.00\nuser2: $75.00');
+      expect(sendMessage).toHaveBeenCalledWith(chatId, 'The group balance is \nuser1 is owed $0.00\nuser2 owes $75.00');
     });
   });
 });
