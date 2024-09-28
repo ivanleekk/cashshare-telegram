@@ -33,7 +33,7 @@ export async function payHandler(messageArray: string[], chatId: string, message
 
         await prisma.transaction.create({
             data: {
-                amount: amount,
+                totalAmount: amount,
                 description: `Payment from ${user.username} to ${payee.username}`,
                 type: "REPAYMENT",
                 group: {
@@ -46,10 +46,13 @@ export async function payHandler(messageArray: string[], chatId: string, message
                         id: payee.id
                     }
                 },
-                payer: {
-                    connect: {
-                        id: user.id
-                    }
+                payers: {
+                    create: [
+                        {
+                            userId: user.id,
+                            amount: amount
+                        }
+                    ]
                 },
             }
         });

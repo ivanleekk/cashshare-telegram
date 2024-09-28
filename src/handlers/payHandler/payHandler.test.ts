@@ -73,7 +73,7 @@ describe('payHandler', () => {
 
     expect(prisma.transaction.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
-        amount: 10,
+        totalAmount: 10,
         description: 'Payment from user1 to user2',
         type: 'REPAYMENT',
       }),

@@ -1,4 +1,3 @@
-import { Response } from "express";
 import { findUser_byUsername, sendMessage } from "../../utils/utils";
 import { PrismaClient } from "@prisma/client";
 
@@ -107,26 +106,6 @@ export async function addHandler(messageArray: string[], chatId: string, message
         if (!payee) {
             return sendMessage(chatId, "Error adding expense! Please try again.");
         }
-        await prisma.transaction.create({
-            data: {
-                amount: amount,
-                description: description,
-                type: "NEW_EXPENSE",
-                group: {
-                    connect: {
-                        id: chatId.toString()
-                    }
-                },
-                payee: {
-                    connect: {
-                        id: payee.id
-                    }
-                },
-                payer: {
-                    connect: users.map((user) => ({ id: user.id }))
-                }
-            }
-        });
 
         // add the expense to the UserGroupBalance table
         const amountPerPerson = amount / payerList.length;
@@ -172,6 +151,35 @@ export async function addHandler(messageArray: string[], chatId: string, message
                 groupId: chatId.toString()
             }
         });
+
+        await prisma.transaction.create({
+            data: {
+                totalAmount: amount,
+                description: description,
+                type: "NEW_EXPENSE",
+                group: {
+                    connect: {
+                        id: chatId.toString()
+                    }
+                },
+                payee: {
+                    connect: {
+                        id: payee.id
+                    }
+                },
+                payers: {
+                    create: payerList.map((payer) => ({
+                        user: {
+                            connect: {
+                                username: payer,
+                            },
+                        },
+                        amount: amountPerPerson, // Assuming you're passing this in the payerList
+                    })),
+                }
+            }
+        });
+
 
         return sendMessage(chatId, `Added expense of \$${amount} for ${description} for ${payerList.join(", ")}!`);
     } catch (error:any) {

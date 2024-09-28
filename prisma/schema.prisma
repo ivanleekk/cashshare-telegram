@@ -54,7 +54,7 @@ model TransactionPayer {
   transactionId String
   user          User        @relation(fields: [userId], references: [id])
   userId        String
-  amountOwed    Float // Amount owed by the payer for this transaction
+  amount        Float // Amount owed by the payer for this transaction
 }
 
 model Group {

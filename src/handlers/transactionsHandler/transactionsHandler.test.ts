@@ -33,27 +33,27 @@ describe('transactionsHandler', () => {
   });
 
   it('should return a message with all transactions', async () => {
-    prisma.transaction.findMany.mockResolvedValue([
-      {
-        type: 'REPAYMENT',
-        payer: [{ username: 'user1' }],
-        payee: [{ username: 'user2' }],
-        amount: 10,
-        description: 'Lunch',
-      },
-      {
-        type: 'EXPENSE',
-        payer: [{ username: 'user3' }],
-        payee: [{ username: 'user4' }],
-        amount: 20,
-        description: 'Dinner',
-      },
-    ]);
+  prisma.transaction.findMany.mockResolvedValue([
+    {
+      type: 'REPAYMENT',
+      payers: [{ user: { username: 'user1' } }],
+      payee: [{ username: 'user2' }],
+      totalAmount: 10,
+      description: 'Lunch',
+    },
+    {
+      type: 'EXPENSE',
+      payers: [{ user: { username: 'user3' } }],
+      payee: [{ username: 'user4' }],
+      totalAmount: 20,
+      description: 'Dinner',
+    },
+  ]);
 
-    await transactionsHandler(chatId);
-    expect(sendMessage).toHaveBeenCalledWith(
-      chatId,
-      '<b>Transactions:</b>\nType: REPAYMENT \nFrom: user1 To: user2 \nAmount: $10 Description: Lunch\n\nType: EXPENSE \nFrom: user3 To: user4 \nAmount: $20 Description: Dinner\n\n'
-    );
-  });
+  await transactionsHandler(chatId);
+  expect(sendMessage).toHaveBeenCalledWith(
+    chatId,
+    '<b>Transactions:</b>\nType: REPAYMENT \nFrom: user1 To: user2 \nAmount: $10 Description: Lunch\n\nType: EXPENSE \nFrom: user3 To: user4 \nAmount: $20 Description: Dinner\n\n'
+  );
+});
 });
