@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { globalHandler } from './globalHandler';
 import { sendMessage } from '../utils/utils';
-import { startHandler } from './startHandler';
-import { addHandler } from './addHandler';
-import { groupBalanceHandler, individualBalanceHandler } from './BalanceHandler';
-import { payHandler } from './payHandler';
-import { transactionsHandler } from './transactionsHandler';
+import { startHandler } from './startHandler/startHandler';
+import { addHandler } from './addHandler/addHandler';
+import { groupBalanceHandler, individualBalanceHandler } from './balanceHandler/balanceHandler';
+import { payHandler } from './payHandler/payHandler';
+import { transactionsHandler } from './transactionsHandler/transactionsHandler';
 
 vi.mock('../utils/utils');
 vi.mock('./startHandler');

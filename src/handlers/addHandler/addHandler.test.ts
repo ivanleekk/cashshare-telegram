@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { addHandler } from './addHandler';
-import { sendMessage, findUser_byUsername } from '../utils/utils';
+import { sendMessage, findUser_byUsername } from '../../utils/utils';
 import { PrismaClient } from '@prisma/client';
 import resetAllMocks = jest.resetAllMocks;
 

@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { sendMessage } from "../utils/utils";
+import { sendMessage } from "../../utils/utils";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({});
