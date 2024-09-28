@@ -17,7 +17,7 @@ export async function payHandler(messageArray: string[], chatId: string, message
         }
 
         if (messageArray.length != 3) {
-            return sendMessage(chatId, "Invalid format! Please use /pay [amount] [payee]");
+            return sendMessage(chatId, "Invalid format! Please use /pay [total amount] [payee]");
         }
         const amount = parseFloat(messageArray[1]);
         const payee = await findUser_byUsername(messageArray[2]);

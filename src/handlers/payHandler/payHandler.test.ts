@@ -46,7 +46,7 @@ describe('payHandler', () => {
     prisma.group.findUnique.mockResolvedValue({ id: chatId });
     const messageArray = ['/pay', '10'];
     await payHandler(messageArray, chatId, messageSender);
-    expect(sendMessage).toHaveBeenCalledWith(chatId, 'Invalid format! Please use /pay [amount] [payee]');
+    expect(sendMessage).toHaveBeenCalledWith(chatId, 'Invalid format! Please use /pay [total amount] [payee]');
   });
 
   it('should return an error message if the payee is not found', async () => {

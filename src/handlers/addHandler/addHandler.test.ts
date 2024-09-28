@@ -93,8 +93,16 @@ describe('addHandler', () => {
     await addHandler(messageArray, chatId, messageSender);
 
     expect(prisma.transaction.create).toHaveBeenCalled();
-    expect(prisma.userGroupBalance.update).toHaveBeenCalledTimes(3);
+    expect(prisma.userGroupBalance.update).toHaveBeenCalledTimes(5);
     expect(sendMessage).toHaveBeenCalledWith(chatId, 'Added expense of $20 for dinner for @testuser, @user1, @user2!');
+  });
+
+  it('should allow individual users to have different amounts', async () => {
+    const messageArray = ['/add', '2000', 'dinner', '@user1', '@user2', '15', '@user3', '@user4', '123', '@testuser', '8'];
+    await addHandler(messageArray, chatId, messageSender);
+    expect(prisma.transaction.create).toHaveBeenCalled();
+    expect(prisma.userGroupBalance.update).toHaveBeenCalledTimes(10);
+    expect(sendMessage).toHaveBeenCalledWith(chatId, 'Added expense of $2000 for dinner for @user1, @user2, @user3, @user4, @testuser!');
   });
 
   // it('should handle database errors gracefully', async () => {
