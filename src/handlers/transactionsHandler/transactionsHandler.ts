@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { sendMessage } from "../utils/utils";
+import { sendMessage } from "../../utils/utils";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({});
@@ -12,7 +12,11 @@ export async function transactionsHandler(chatId: string) {
                 groupId: chatId.toString()
             },
             include: {
-                payer: true,
+                payers: {
+                    include: {
+                        user: true
+                    }
+                },
                 payee: true
             }
         });
@@ -21,9 +25,10 @@ export async function transactionsHandler(chatId: string) {
         }
         let message = "<b>Transactions:</b>\n";
         transactions.forEach(transaction => {
-            const payers = transaction.payer.map(payer => payer.username.toString()).join(", ");
+            console.log(transaction);
+            const payers = transaction.payers.map(payer => payer.user.username.toString()).join(", ");
             const payees = transaction.payee.map(payee => payee.username.toString()).join(", ");
-            message += `Type: ${transaction.type} \nFrom: ${payers} To: ${payees} \nAmount: \$${transaction.amount} Description: ${transaction.description}\n\n`;
+            message += `Type: ${transaction.type} \nFrom: ${payers} To: ${payees} \nAmount: \$${transaction.totalAmount} Description: ${transaction.description}\n\n`;
         });
         return sendMessage(chatId, message);
     } catch (error: any) {

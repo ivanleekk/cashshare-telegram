@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { findUser_byUsername, sendMessage } from "../utils/utils";
+import { findUser_byUsername, sendMessage } from "../../utils/utils";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({});
@@ -17,7 +17,7 @@ export async function payHandler(messageArray: string[], chatId: string, message
         }
 
         if (messageArray.length != 3) {
-            return sendMessage(chatId, "Invalid format! Please use /pay [amount] [payee]");
+            return sendMessage(chatId, "Invalid format! Please use /pay [total amount] [payee]");
         }
         const amount = parseFloat(messageArray[1]);
         const payee = await findUser_byUsername(messageArray[2]);
@@ -33,7 +33,7 @@ export async function payHandler(messageArray: string[], chatId: string, message
 
         await prisma.transaction.create({
             data: {
-                amount: amount,
+                totalAmount: amount,
                 description: `Payment from ${user.username} to ${payee.username}`,
                 type: "REPAYMENT",
                 group: {
@@ -46,10 +46,13 @@ export async function payHandler(messageArray: string[], chatId: string, message
                         id: payee.id
                     }
                 },
-                payer: {
-                    connect: {
-                        id: user.id
-                    }
+                payers: {
+                    create: [
+                        {
+                            userId: user.id,
+                            amount: amount
+                        }
+                    ]
                 },
             }
         });

@@ -1,10 +1,10 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import { sendMessage } from '../utils/utils';
-import { startHandler } from './startHandler';
-import { addHandler } from './addHandler';
-import { groupBalanceHandler, individualBalanceHandler } from './BalanceHandler';
-import { payHandler } from './payHandler';
-import { transactionsHandler } from './transactionsHandler';
+import { startHandler } from './startHandler/startHandler';
+import { addHandler } from './addHandler/addHandler';
+import { groupBalanceHandler, individualBalanceHandler } from './balanceHandler/balanceHandler';
+import { payHandler } from './payHandler/payHandler';
+import { transactionsHandler } from './transactionsHandler/transactionsHandler';
 
 export const globalHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
     try {
@@ -21,41 +21,28 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
         const chatTitle = body.message.chat.title;
         const messageArray = messageText.split(" ");
         const messageSender = body.message.from.username;
-
-        switch (messageArray[0]) {
-            case "/start":
-                await startHandler(chatTitle, chatId);
-                break;
-            case "/help":
-                await sendMessage(chatId, "Available commands: \n" +
-                    "/start - Initialize Cashshare Bot for the group \n" +
-                    "/add - Add an expense \n" +
-                    "/pay - Pay back your friends \n" +
-                    "/balance - Check the balance\n" +
-                    "/groupbalance - Check the group balance\n" +
-                    "/transactions - Check the transactions\n");
-                break;
-            case "/add":
-                await addHandler(messageArray, chatId, messageSender);
-                break;
-            case "/balance":
-                await individualBalanceHandler(chatId, messageSender);
-                break;
-            case "/groupbalance":
-                await groupBalanceHandler(chatId);
-                break;
-            case "/pay":
-                await payHandler(messageArray, chatId, messageSender);
-                break;
-            case "/transactions":
-                await transactionsHandler(chatId);
-                break;
-            case "/":
-                await sendMessage(chatId, "Command not recognized. Please use /help to see the available commands.");
-                break;
-            default:
-                await sendMessage(chatId, '');
-                break;
+        if (messageArray[0].startsWith("/start")) {
+            await startHandler(chatTitle, chatId);
+        } else if (messageArray[0].startsWith("/help")) {
+            await sendMessage(chatId, "Available commands: \n" +
+                "/start - Initialize Cashshare Bot for the group \n" +
+                "/add - Add an expense \n" +
+                "/pay - Pay back your friends \n" +
+                "/balance - Check the balance\n" +
+                "/groupbalance - Check the group balance\n" +
+                "/transactions - Check the transactions\n");
+        } else if (messageArray[0].startsWith("/add")) {
+            await addHandler(messageArray, chatId, messageSender);
+        } else if (messageArray[0].startsWith("/balance")) {
+            await individualBalanceHandler(chatId, messageSender);
+        } else if (messageArray[0].startsWith("/groupbalance")) {
+            await groupBalanceHandler(chatId);
+        } else if (messageArray[0].startsWith("/pay")) {
+            await payHandler(messageArray, chatId, messageSender);
+        } else if (messageArray[0].startsWith("/transactions")) {
+            await transactionsHandler(chatId);
+        } else {
+            await sendMessage(chatId, '');
         }
 
         return {

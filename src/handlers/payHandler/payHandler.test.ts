@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { payHandler } from './payHandler';
-import { sendMessage, findUser_byUsername } from '../utils/utils';
+import { sendMessage, findUser_byUsername } from '../../utils/utils';
 import { PrismaClient } from '@prisma/client';
 
-vi.mock('../utils/utils', () => ({
+vi.mock('../../utils/utils', () => ({
   sendMessage: vi.fn(),
   findUser_byUsername: vi.fn(),
 }));
@@ -46,7 +46,7 @@ describe('payHandler', () => {
     prisma.group.findUnique.mockResolvedValue({ id: chatId });
     const messageArray = ['/pay', '10'];
     await payHandler(messageArray, chatId, messageSender);
-    expect(sendMessage).toHaveBeenCalledWith(chatId, 'Invalid format! Please use /pay [amount] [payee]');
+    expect(sendMessage).toHaveBeenCalledWith(chatId, 'Invalid format! Please use /pay [total amount] [payee]');
   });
 
   it('should return an error message if the payee is not found', async () => {
@@ -73,7 +73,7 @@ describe('payHandler', () => {
 
     expect(prisma.transaction.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
-        amount: 10,
+        totalAmount: 10,
         description: 'Payment from user1 to user2',
         type: 'REPAYMENT',
       }),

@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { individualBalanceHandler, groupBalanceHandler } from './BalanceHandler';
-import { sendMessage, findUser_byUsername } from '../utils/utils';
+import { individualBalanceHandler, groupBalanceHandler } from './balanceHandler';
+import { sendMessage, findUser_byUsername } from '../../utils/utils';
 import { PrismaClient } from '@prisma/client';
 
-vi.mock('../utils/utils', () => ({
+vi.mock('../../utils/utils', () => ({
   sendMessage: vi.fn(),
   findUser_byUsername: vi.fn(),
 }));
