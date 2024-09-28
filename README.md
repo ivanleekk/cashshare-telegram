@@ -28,5 +28,5 @@ npx prisma generate
 
 5. Run the bot using the following command:
 ```bash
-npx serverless
+npx serverless deploy
 ```
