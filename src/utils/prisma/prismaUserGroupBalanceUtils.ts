@@ -42,3 +42,14 @@ export async function updateUserGroupBalance_byUserIdGroupId(user: User, chatId:
         }
     })
 }
+
+export async function findUserGroupBalances_byGroupId(groupId: string | number) {
+    return prisma.userGroupBalance.findMany({
+        where: {
+            groupId: groupId.toString()
+        },
+        include: {
+            user: true
+        }
+    })
+}
