@@ -1,5 +1,4 @@
-import { Response } from "express";
-import { sendMessage } from "../../utils/utils";
+import { sendMessage } from "../../utils/telegramUtils";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({});

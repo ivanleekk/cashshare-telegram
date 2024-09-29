@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { sendMessage } from '../utils/utils';
+import { sendMessage } from '../utils/telegramUtils';
 import { startHandler } from './startHandler/startHandler';
 import { addHandler } from './addHandler/addHandler';
 import { groupBalanceHandler, individualBalanceHandler } from './balanceHandler/balanceHandler';

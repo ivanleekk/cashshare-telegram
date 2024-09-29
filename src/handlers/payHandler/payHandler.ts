@@ -1,6 +1,7 @@
 import { Response } from "express";
-import { findUser_byUsername, sendMessage } from "../../utils/utils";
+import { sendMessage } from "../../utils/telegramUtils";
 import { PrismaClient } from "@prisma/client";
+import {findUser_byUsername} from "../../utils/prisma/prismaUserUtils";
 
 const prisma = new PrismaClient({});
 
