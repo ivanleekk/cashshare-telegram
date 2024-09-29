@@ -1,114 +1,99 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { addHandler } from './addHandler';
-import { sendMessage, findUser_byUsername } from '../../utils/utils';
-import { PrismaClient } from '@prisma/client';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { sendMessage } from "../../utils/telegramUtils";
+import { findUser_byUsername } from "../../utils/prisma/prismaUserUtils/prismaUserUtils";
+import { findGroup_byId, updateGroup_byId_withNewMembers } from "../../utils/prisma/prismaGroupUtils/prismaGroupUtils";
+import { createUserGroupBalance, findUserGroupBalance_byUserIdGroupId } from "../../utils/prisma/prismaUserGroupBalance/prismaUserGroupBalanceUtils";
+import { createTransaction_Expense } from "../../utils/prisma/prismaTransactionUtils/prismaTransactionUtils";
+import { addHandler } from "./addHandler";
 
-vi.mock('../../utils/utils', () => ({
+// Mock the dependencies
+vi.mock("../../utils/telegramUtils", () => ({
     sendMessage: vi.fn(),
+}));
+
+vi.mock("../../utils/prisma/prismaUserUtils/prismaUserUtils", () => ({
     findUser_byUsername: vi.fn(),
 }));
-vi.mock('@prisma/client', () => {
-  const mPrismaClient = {
-    group: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
-    },
-    user: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-    },
-    userGroupBalance: {
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      findMany: vi.fn(),
-    },
-    transaction: {
-      create: vi.fn(),
-    },
-  };
-  return { PrismaClient: vi.fn(() => mPrismaClient) };
-});
 
-describe('addHandler', () => {
-  let prisma: any;
-  let chatId: string;
-  let messageSender: string;
+vi.mock("../../utils/prisma/prismaGroupUtils/prismaGroupUtils", () => ({
+    findGroup_byId: vi.fn(),
+    updateGroup_byId_withNewMembers: vi.fn(),
+}));
 
-  beforeEach(() => {
-    prisma = new PrismaClient();
-    chatId = '1';
-    messageSender = 'testuser';
-    vi.clearAllMocks();
-  });
+vi.mock("../../utils/prisma/prismaUserGroupBalance/prismaUserGroupBalanceUtils", () => ({
+    createUserGroupBalance: vi.fn(),
+    findUserGroupBalance_byUserIdGroupId: vi.fn(),
+}));
 
-  it('should return an error message if the format is invalid', async () => {
-    const messageArray = ['/add', '10'];
-    await addHandler(messageArray, chatId, messageSender);
-    expect(sendMessage).toHaveBeenCalledWith(chatId, 'Invalid format! Please use /add [amount] [description] [people]');
-  });
+vi.mock("../../utils/prisma/prismaTransactionUtils/prismaTransactionUtils", () => ({
+    createTransaction_Expense: vi.fn(),
+}));
 
-  it('should return an error message if the group does not exist', async () => {
-    prisma.group.findUnique.mockResolvedValue(null);
-    const messageArray = ['/add', '10', 'lunch', '@user1'];
-    await addHandler(messageArray, chatId, messageSender);
-    expect(sendMessage).toHaveBeenCalledWith(chatId, 'Cashshare Bot is not initialized for this group! Use /start to initialize.');
-  });
+describe("addHandler", () => {
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
 
-  it('should create a new user if a user is not found', async () => {
-    prisma.group.findUnique.mockResolvedValue({ id: chatId, members: [] });
-    prisma.user.findUnique.mockResolvedValue(null);
-    findUser_byUsername.mockResolvedValue(null);
-    prisma.user.create.mockResolvedValue({ id: 'newUser' });
+    it("should return an error message for invalid format", async () => {
+        const messageArray = ["/add"];
+        const chatId = "chatId";
+        const messageSender = "sender";
 
-    const messageArray = ['/add', '10', 'lunch', '@newUser'];
-    await addHandler(messageArray, chatId, messageSender);
-    expect(prisma.user.create).toHaveBeenCalled();
-  });
+        await addHandler(messageArray, chatId, messageSender);
 
-  it('should add the expense and update balances correctly', async () => {
-    prisma.group.findUnique.mockResolvedValue({ id: chatId, members: [] });
-    findUser_byUsername.mockResolvedValue({ id: 'user1' });
-    prisma.user.findUnique.mockResolvedValue({ id: 'user1' });
-    prisma.userGroupBalance.findFirst.mockResolvedValue(null);
-    prisma.userGroupBalance.findMany.mockResolvedValue([{ userId: 'user1', balance: 0 }]);
+        expect(sendMessage).toHaveBeenCalledWith(chatId, "Invalid format! Please use /add [amount] [description] [people]");
+    });
 
-    const messageArray = ['/add', '10', 'lunch', '@user1'];
-    await addHandler(messageArray, chatId, messageSender);
+    it("should return an error message for invalid amount", async () => {
+        const messageArray = ["/add", "invalidAmount", "description", "@user"];
+        const chatId = "chatId";
+        const messageSender = "sender";
 
-    expect(prisma.transaction.create).toHaveBeenCalled();
-    expect(prisma.userGroupBalance.update).toHaveBeenCalled();
-    expect(sendMessage).toHaveBeenCalledWith(chatId, 'Added expense of $10 for lunch for @testuser, @user1!');
-  });
+        await addHandler(messageArray, chatId, messageSender);
 
+        expect(sendMessage).toHaveBeenCalledWith(chatId, "Invalid amount! Please use /add [amount] [description] [people]");
+    });
 
-  it('should handle multiple users correctly', async () => {
-    prisma.group.findUnique.mockResolvedValue({ id: chatId, members: [] });
-    findUser_byUsername.mockResolvedValueOnce({ id: 'user1' }).mockResolvedValueOnce({ id: 'user2' });
-    prisma.user.findUnique.mockResolvedValueOnce({ id: 'user1' }).mockResolvedValueOnce({ id: 'user2' });
-    prisma.userGroupBalance.findFirst.mockResolvedValue(null);
-    prisma.userGroupBalance.findMany.mockResolvedValue([{ userId: 'user1', balance: 0 }, { userId: 'user2', balance: 0 }]);
+    it("should return an error message if group does not exist", async () => {
+        const messageArray = ["/add", "100", "description", "@user"];
+        const chatId = "chatId";
+        const messageSender = "sender";
 
-    const messageArray = ['/add', '20', 'dinner', '@user1', '@user2'];
-    await addHandler(messageArray, chatId, messageSender);
+        (findGroup_byId as vi.Mock).mockResolvedValue(null);
 
-    expect(prisma.transaction.create).toHaveBeenCalled();
-    expect(prisma.userGroupBalance.update).toHaveBeenCalledTimes(5);
-    expect(sendMessage).toHaveBeenCalledWith(chatId, 'Added expense of $20 for dinner for @testuser, @user1, @user2!');
-  });
+        await addHandler(messageArray, chatId, messageSender);
 
-  it('should allow individual users to have different amounts', async () => {
-    const messageArray = ['/add', '2000', 'dinner', '@user1', '@user2', '15', '@user3', '@user4', '123', '@testuser', '8'];
-    await addHandler(messageArray, chatId, messageSender);
-    expect(prisma.transaction.create).toHaveBeenCalled();
-    expect(prisma.userGroupBalance.update).toHaveBeenCalledTimes(10);
-    expect(sendMessage).toHaveBeenCalledWith(chatId, 'Added expense of $2000 for dinner for @user1, @user2, @user3, @user4, @testuser!');
-  });
+        expect(sendMessage).toHaveBeenCalledWith(chatId, "Cashshare Bot is not initialized for this group! Use /start to initialize.");
+    });
 
-  // it('should handle database errors gracefully', async () => {
-  //   prisma.group.findUnique.mockRejectedValue(new Error('Database error'));
-  //   const messageArray = ['/add', '10', 'lunch', '@user1'];
-  //   await addHandler(messageArray, chatId, messageSender);
-  //   expect(sendMessage).toHaveBeenCalledWith(chatId, 'Error adding expense! Please try again.');
-  // });
+    it("should create a new user group balance if not exists", async () => {
+        const messageArray = ["/add", "100", "description", "@user"];
+        const chatId = "chatId";
+        const messageSender = "sender";
+
+        const mockGroup = { id: "chatId", members: [{ id: "userId" }] };
+        (findGroup_byId as vi.Mock).mockResolvedValue(mockGroup);
+        (findUserGroupBalance_byUserIdGroupId as vi.Mock).mockResolvedValue(null);
+
+        await addHandler(messageArray, chatId, messageSender);
+
+        expect(createUserGroupBalance).toHaveBeenCalledWith({ id: "userId" }, "chatId");
+    });
+
+    it("should add a new expense transaction", async () => {
+        const messageArray = ["/add", "100", "description", "@user"];
+        const chatId = "chatId";
+        const messageSender = "sender";
+
+        const mockGroup = { id: "chatId", members: [{ id: "userId" }] };
+        const mockUser = { id: "userId" };
+        (findGroup_byId as vi.Mock).mockResolvedValue(mockGroup);
+        (findUserGroupBalance_byUserIdGroupId as vi.Mock).mockResolvedValue({ userId: "userId", groupId: "chatId", balance: 0 });
+        (findUser_byUsername as vi.Mock).mockResolvedValue(mockUser);
+
+        await addHandler(messageArray, chatId, messageSender);
+
+        expect(createTransaction_Expense).toHaveBeenCalled();
+        expect(sendMessage).toHaveBeenCalledWith(chatId, `Added expense of \$100 for description for @sender, @user!`);
+    });
 });

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { transactionsHandler } from './transactionsHandler';
-import { sendMessage } from '../../utils/utils';
+import { sendMessage } from '../../utils/telegramUtils';
 import { PrismaClient } from '@prisma/client';
 
 vi.mock('../../utils/utils', () => ({

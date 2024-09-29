@@ -1,10 +1,11 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { sendMessage } from '../utils/utils';
+import { sendMessage } from '../utils/telegramUtils';
 import { startHandler } from './startHandler/startHandler';
 import { addHandler } from './addHandler/addHandler';
 import { groupBalanceHandler, individualBalanceHandler } from './balanceHandler/balanceHandler';
 import { payHandler } from './payHandler/payHandler';
 import { transactionsHandler } from './transactionsHandler/transactionsHandler';
+import {deleteHandler} from "./deleteHandler/deleteHandler";
 
 export const globalHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
     try {
@@ -30,7 +31,8 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
                 "/pay - Pay back your friends \n" +
                 "/balance - Check the balance\n" +
                 "/groupbalance - Check the group balance\n" +
-                "/transactions - Check the transactions\n");
+                "/transactions - Check the transactions\n" +
+                "/delete - Delete a transaction\n");
         } else if (messageArray[0].startsWith("/add")) {
             await addHandler(messageArray, chatId, messageSender);
         } else if (messageArray[0].startsWith("/balance")) {
@@ -41,6 +43,8 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
             await payHandler(messageArray, chatId, messageSender);
         } else if (messageArray[0].startsWith("/transactions")) {
             await transactionsHandler(chatId);
+        } else if (messageArray[0].startsWith("/delete")){
+            await deleteHandler(messageArray, chatId);
         } else {
             await sendMessage(chatId, '');
         }

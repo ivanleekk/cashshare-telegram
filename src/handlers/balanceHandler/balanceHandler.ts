@@ -1,7 +1,11 @@
-import { findUser_byUsername, sendMessage } from "../../utils/utils";
-import { PrismaClient } from "@prisma/client";
+import { sendMessage } from "../../utils/telegramUtils";
+import {findUser_byUsername} from "../../utils/prisma/prismaUserUtils/prismaUserUtils";
+import {
+    findUserGroupBalance_byUserIdGroupId,
+    findUserGroupBalances_byGroupId
+} from "../../utils/prisma/prismaUserGroupBalance/prismaUserGroupBalanceUtils";
+import {findGroup_byId} from "../../utils/prisma/prismaGroupUtils/prismaGroupUtils";
 
-const prisma = new PrismaClient({});
 
 export async function individualBalanceHandler(chatId: string, messageSender: string) {
     try {
@@ -9,14 +13,8 @@ export async function individualBalanceHandler(chatId: string, messageSender: st
         if (!user) {
             return sendMessage(chatId, "You are not part of this group!");
         }
-        const userBalance = await prisma.userGroupBalance.findUnique({
-            where: {
-                userId_groupId: {
-                    userId: user.id,
-                    groupId: chatId.toString()
-                }
-            },
-        });
+
+        const userBalance = await findUserGroupBalance_byUserIdGroupId(user, chatId);
 
         if (!userBalance) {
             return sendMessage(chatId, "You have no balance in this group!");
@@ -34,38 +32,17 @@ export async function individualBalanceHandler(chatId: string, messageSender: st
 
 export async function groupBalanceHandler(chatId: string) {
     try {
-        const group = await prisma.group.findUnique({
-            where: {
-                id: chatId.toString()
-            },
-            include: {
-                members: true
-            }
-        });
+        const group = await findGroup_byId(chatId);
 
-        if (!group) {
-            return sendMessage(chatId, "Group not found!");
+        if (group === null) {
+            await sendMessage(chatId, "This group is not initialised! Use /start to continue.");
         }
 
-        const groupMembers = group.members;
+        const groupBalances = await findUserGroupBalances_byGroupId(chatId);
 
-        const groupBalance = await Promise.all(groupMembers.map(async (member) => {
-            const userBalance = await prisma.userGroupBalance.findUnique({
-                where: {
-                    userId_groupId: {
-                        userId: member.id,
-                        groupId: chatId.toString()
-                    }
-                }
-            });
-            const balance = userBalance ? userBalance.balance : 0;
-            const balanceMessage = balance > 0
-                ? `owes \$${balance.toFixed(2)}`
-                : `is owed \$${Math.abs(balance).toFixed(2)}`;
-            return { username: member.username, balanceMessage };
-        }));
-
-        return sendMessage(chatId, `The group balance is \n${groupBalance.map((user) => `${user.username} ${user.balanceMessage}`).join("\n")}`);
+        return sendMessage(chatId, `The group balance is \n${groupBalances.map((userGroupBalance) => 
+    `${userGroupBalance.user.username} ${userGroupBalance.balance > 0 ? `owes \$${userGroupBalance.balance.toFixed(2)}` : `is owed \$${Math.abs(userGroupBalance.balance).toFixed(2)}`}`
+).join("\n")}`);
     } catch (error: any) {
         return sendMessage(chatId, `An error occurred: ${error.message}`);
     }

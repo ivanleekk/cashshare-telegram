@@ -1,7 +1,11 @@
-import {findUser_byUsername, sendMessage} from "../../utils/utils";
-import {PrismaClient} from "@prisma/client";
-
-const prisma = new PrismaClient({});
+import {sendMessage} from "../../utils/telegramUtils";
+import {findUser_byUsername} from "../../utils/prisma/prismaUserUtils/prismaUserUtils";
+import {findGroup_byId, updateGroup_byId_withNewMembers} from "../../utils/prisma/prismaGroupUtils/prismaGroupUtils";
+import {
+    createUserGroupBalance,
+    findUserGroupBalance_byUserIdGroupId, updateUserGroupBalance_byUserIdGroupId
+} from "../../utils/prisma/prismaUserGroupBalance/prismaUserGroupBalanceUtils";
+import {createTransaction_Expense} from "../../utils/prisma/prismaTransactionUtils/prismaTransactionUtils";
 
 export async function addHandler(messageArray: string[], chatId: string, messageSender: String) {
     try {
@@ -10,6 +14,9 @@ export async function addHandler(messageArray: string[], chatId: string, message
             return sendMessage(chatId, "Invalid format! Please use /add [amount] [description] [people]");
         }
         const amount = parseFloat(messageArray[1]);
+        if (isNaN(amount)) {
+            return sendMessage(chatId, "Invalid amount! Please use /add [amount] [description] [people]");
+        }
         // find the index with @ prefix
         const firstUser: number = messageArray.findIndex((element: string) => element.startsWith("@"));
         const description = messageArray.slice(2, firstUser).join(" ");
@@ -43,77 +50,29 @@ export async function addHandler(messageArray: string[], chatId: string, message
         payerList = [...new Set(payerList)];
 
         // check if group exists in database
-        const group = await prisma.group.findUnique({
-            where: {
-                id: chatId.toString()
-            },
-            include: {
-                members: true
-            }
-        });
+        let group = await findGroup_byId(chatId);
 
         // if group does not exist, return an error message
         if (!group) {
             return sendMessage(chatId, "Cashshare Bot is not initialized for this group! Use /start to initialize.");
         }
-        // check if all users are part of the group
-        const users = [];
 
-        // if not all users are part of the group, add them to the group
-        for (const payer of payerList) {
-            const person = payer.split(" ")[0];
-            let user = await prisma.user.findUnique({
-                where: {
-                    username: person
-                }
-            });
-            if (!user) {
-                user = await prisma.user.create({
-                    data: {
-                        username: person,
-                    }
-                });
-            }
-            users.push(user)
-        }
+        // check if users are in the group, or else create them or add them to the list
+        await updateGroup_byId_withNewMembers(chatId, payersUsernames);
+
+        group = await findGroup_byId(chatId);
 
         // if not all users are in the UserGroupBalance table, add them
-        for (const user of users) {
-            const userGroupBalance = await prisma.userGroupBalance.findFirst({
-                where: {
-                    userId: user.id,
-                    groupId: chatId.toString()
-                }
-            });
+        if (group === null || group.members.length === 0) {
+            throw new Error("No members in group!");
+        }
+        for (const user of group.members) {
+            const userGroupBalance = await findUserGroupBalance_byUserIdGroupId(user, chatId);
             if (!userGroupBalance) {
-                await prisma.userGroupBalance.create({
-                    data: {
-                        user: {
-                            connect: {
-                                id: user.id
-                            }
-                        },
-                        group: {
-                            connect: {
-                                id: chatId.toString()
-                            }
-                        }
-                    }
-                });
+                await createUserGroupBalance(user, chatId);
             }
         }
 
-        // update the group with the new users and create a UserGroupBalance for each user
-        await prisma.group.update({
-            where: {
-                id: chatId.toString()
-            },
-            data: {
-                members: {
-                    connect: users.map((user) => ({id: user.id}))
-                }
-            }
-        });
 
         // add the transaction to the database
         // by default, the payee is the user who added the expense
@@ -137,109 +96,12 @@ export async function addHandler(messageArray: string[], chatId: string, message
         }
 
         // add the expense to the UserGroupBalance table for each user without amount
-        const amountPerPerson = (amount - specifiedAmount) / payerListWithoutAmount.length;
-        for (const person of payerListWithoutAmount) {
-            const user = await findUser_byUsername(person);
-            if (!user) {
-                return sendMessage(chatId, "Error adding expense! Please try again.");
-            }
-            if (user.id === payee.id) {
-                await prisma.userGroupBalance.update({
-                    where: {
-                        userId_groupId: {
-                            userId: user.id,
-                            groupId: chatId.toString()
-                        }
-                    },
-                    data: {
-                        balance: {
-                            decrement: amount
-                        }
-                    }
-                });
-            }
-            await prisma.userGroupBalance.update({
-                where: {
-                    userId_groupId: {
-                        userId: user.id,
-                        groupId: chatId.toString()
-                    }
-                },
-                data: {
-                    balance: {
-                        increment: amountPerPerson
-                    }
-                }
-            });
+        let defaultAmountPerPerson = 0;
+        if (payerListWithoutAmount.length > 0) {
+            defaultAmountPerPerson = (amount - specifiedAmount) / payerListWithoutAmount.length;
         }
 
-        // add the expense to the UserGroupBalance table for each user with amount
-        for (const person of payerListWithAmount) {
-            const user = await findUser_byUsername(person.split(" ")[0]);
-            if (!user) {
-                return sendMessage(chatId, "Error adding expense! Please try again.");
-            }
-            if (user.id === payee.id) {
-                await prisma.userGroupBalance.update({
-                    where: {
-                        userId_groupId: {
-                            userId: user.id,
-                            groupId: chatId.toString()
-                        }
-                    },
-                    data: {
-                        balance: {
-                            decrement: amount
-                        }
-                    }
-                });
-            }
-            await prisma.userGroupBalance.update({
-                where: {
-                    userId_groupId: {
-                        userId: user.id,
-                        groupId: chatId.toString()
-                    }
-                },
-                data: {
-                    balance: {
-                        increment: parseFloat(person.split(" ")[1])
-                    }
-                }
-            });
-        }
-
-
-        await prisma.transaction.create({
-            data: {
-                totalAmount: amount,
-                description: description,
-                type: "NEW_EXPENSE",
-                group: {
-                    connect: {
-                        id: chatId.toString()
-                    }
-                },
-                payee: {
-                    connect: {
-                        id: payee.id
-                    }
-                },
-                payers: {
-                    create: payerList.map((payer) => {
-                        const [username, specifiedAmount] = payer.split(" ");
-                        return {
-                            user: {
-                                connect: {
-                                    username: username,
-                                },
-                            },
-                            amount: specifiedAmount ? parseFloat(specifiedAmount) : amountPerPerson,
-                        };
-                    }),
-                }
-            }
-        });
+        await createTransaction_Expense(chatId, payee, amount, description, payerList, defaultAmountPerPerson);
 
         return sendMessage(chatId, `Added expense of \$${amount} for ${description} for ${payersUsernames.join(", ")}!`);
     } catch (error: any) {

@@ -1,8 +1,5 @@
-import { Response } from "express";
-import { sendMessage } from "../../utils/utils";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient({});
+import { sendMessage } from "../../utils/telegramUtils";
+import {createGroup, findGroup_byId} from "../../utils/prisma/prismaGroupUtils/prismaGroupUtils";
 
 export async function startHandler(chatTitle: string, chatId: string) {
     try {
@@ -10,24 +7,14 @@ export async function startHandler(chatTitle: string, chatId: string) {
             return sendMessage(chatId, "Cashshare Bot can only be initialized in a group chat!");
         }
         // check if group exists in database
-        const group = await prisma.group.findUnique({
-            where: {
-                id: chatId.toString()
-            }
-        });
-        console.log(group);
+        const group = await findGroup_byId(chatId);
 
         // if group exists, return a message to the user
         if (group) {
             return sendMessage(chatId, `Cashshare Bot is already initialized for <i>${chatTitle}</i>!`);
         }
         // add the chatId to database Group table
-        await prisma.group.create({
-            data: {
-                id: chatId.toString(),
-                name: chatTitle,
-            }
-        });
+        await createGroup(chatId, chatTitle);
 
         return sendMessage(chatId, `Welcome to Cashshare Bot! Initialised Cashshare for <i>${chatTitle}</i>!`);
     } catch (error: any) {

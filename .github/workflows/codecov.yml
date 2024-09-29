@@ -25,7 +25,9 @@ jobs:
       - name: Run tests
         run: npx vitest run --coverage
 
+
       - name: Upload results to Codecov
+        if: ${{ always() }}
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
