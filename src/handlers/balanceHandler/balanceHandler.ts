@@ -1,10 +1,10 @@
 import { sendMessage } from "../../utils/telegramUtils";
-import {findUser_byUsername} from "../../utils/prisma/prismaUserUtils";
+import {findUser_byUsername} from "../../utils/prisma/prismaUserUtils/prismaUserUtils";
 import {
     findUserGroupBalance_byUserIdGroupId,
     findUserGroupBalances_byGroupId
-} from "../../utils/prisma/prismaUserGroupBalanceUtils";
-import {findGroup_byId} from "../../utils/prisma/prismaGroupUtils";
+} from "../../utils/prisma/prismaUserGroupBalance/prismaUserGroupBalanceUtils";
+import {findGroup_byId} from "../../utils/prisma/prismaGroupUtils/prismaGroupUtils";
 
 
 export async function individualBalanceHandler(chatId: string, messageSender: string) {

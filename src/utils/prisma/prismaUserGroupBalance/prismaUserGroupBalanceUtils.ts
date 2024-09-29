@@ -1,4 +1,4 @@
-import {prisma} from "../../../libs/prisma";
+import {prisma} from "../../../../libs/prisma";
 import {User} from "@prisma/client";
 
 export async function findUserGroupBalance_byUserIdGroupId(user: User, chatId: string | number) {

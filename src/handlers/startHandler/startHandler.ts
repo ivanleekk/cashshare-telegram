@@ -1,5 +1,5 @@
 import { sendMessage } from "../../utils/telegramUtils";
-import {createGroup, findGroup_byId} from "../../utils/prisma/prismaGroupUtils";
+import {createGroup, findGroup_byId} from "../../utils/prisma/prismaGroupUtils/prismaGroupUtils";
 
 export async function startHandler(chatTitle: string, chatId: string) {
     try {

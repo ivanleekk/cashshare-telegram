@@ -1,7 +1,7 @@
 import { sendMessage } from "../../utils/telegramUtils";
-import {findUser_byUsername} from "../../utils/prisma/prismaUserUtils";
-import {findGroup_byId} from "../../utils/prisma/prismaGroupUtils";
-import {createTransaction_Repayment} from "../../utils/prisma/prismaTransactionUtils";
+import {findUser_byUsername} from "../../utils/prisma/prismaUserUtils/prismaUserUtils";
+import {findGroup_byId} from "../../utils/prisma/prismaGroupUtils/prismaGroupUtils";
+import {createTransaction_Repayment} from "../../utils/prisma/prismaTransactionUtils/prismaTransactionUtils";
 
 export async function payHandler(messageArray: string[], chatId: string, messageSender: String) {
     try {

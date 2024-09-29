@@ -8,7 +8,7 @@ import { groupBalanceHandler, individualBalanceHandler } from './balanceHandler/
 import { payHandler } from './payHandler/payHandler';
 import { transactionsHandler } from './transactionsHandler/transactionsHandler';
 
-vi.mock('../utils/utils');
+vi.mock('../utils/telegramUtils');
 vi.mock('./startHandler/startHandler');
 vi.mock('./addHandler/addHandler');
 vi.mock('./balanceHandler/balanceHandler');

@@ -2,7 +2,7 @@ import {sendMessage} from "../../utils/telegramUtils";
 import {
     deleteTransactions_byGroupTransactionId,
     findTransactions_byGroupTransactionId
-} from "../../utils/prisma/prismaTransactionUtils";
+} from "../../utils/prisma/prismaTransactionUtils/prismaTransactionUtils";
 
 export async function deleteHandler(messageArray: string[], chatId: string) {
     try {

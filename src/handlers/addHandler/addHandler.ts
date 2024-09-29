@@ -1,11 +1,11 @@
 import {sendMessage} from "../../utils/telegramUtils";
-import {findUser_byUsername} from "../../utils/prisma/prismaUserUtils";
-import {findGroup_byId, updateGroup_byId_withNewMembers} from "../../utils/prisma/prismaGroupUtils";
+import {findUser_byUsername} from "../../utils/prisma/prismaUserUtils/prismaUserUtils";
+import {findGroup_byId, updateGroup_byId_withNewMembers} from "../../utils/prisma/prismaGroupUtils/prismaGroupUtils";
 import {
     createUserGroupBalance,
     findUserGroupBalance_byUserIdGroupId, updateUserGroupBalance_byUserIdGroupId
-} from "../../utils/prisma/prismaUserGroupBalanceUtils";
-import {createTransaction_Expense} from "../../utils/prisma/prismaTransactionUtils";
+} from "../../utils/prisma/prismaUserGroupBalance/prismaUserGroupBalanceUtils";
+import {createTransaction_Expense} from "../../utils/prisma/prismaTransactionUtils/prismaTransactionUtils";
 
 export async function addHandler(messageArray: string[], chatId: string, messageSender: String) {
     try {

@@ -1,7 +1,7 @@
-import {prisma} from "../../../libs/prisma";
+import {prisma} from "../../../../libs/prisma";
 import {User} from "@prisma/client";
-import {updateUserGroupBalance_byUserIdGroupId} from "./prismaUserGroupBalanceUtils";
-import {findUser_byUsername} from "./prismaUserUtils";
+import {updateUserGroupBalance_byUserIdGroupId} from "../prismaUserGroupBalance/prismaUserGroupBalanceUtils";
+import {findUser_byUsername} from "../prismaUserUtils/prismaUserUtils";
 
 async function getNextTransactionId(chatId: string) {
     // find the number of transactions in the group

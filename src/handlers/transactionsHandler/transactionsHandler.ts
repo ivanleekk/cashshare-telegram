@@ -1,5 +1,5 @@
 import { sendMessage } from "../../utils/telegramUtils";
-import {findTransactions_byGroupId} from "../../utils/prisma/prismaTransactionUtils";
+import {findTransactions_byGroupId} from "../../utils/prisma/prismaTransactionUtils/prismaTransactionUtils";
 
 export async function transactionsHandler(chatId: string) {
     try {

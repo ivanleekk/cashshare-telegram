@@ -27,7 +27,8 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "prisma-erd-generator": "^1.11.2",
-    "telegraf": "^4.16.3"
+    "telegraf": "^4.16.3",
+    "vitest-mock-extended": "^2.0.2"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",
