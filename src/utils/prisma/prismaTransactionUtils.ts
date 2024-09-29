@@ -112,7 +112,8 @@ export async function findTransaction_byId(transactionId: string) {
 export async function findTransactions_byGroupId(chatId: string) {
     return prisma.transaction.findMany({
         where: {
-            groupId: chatId.toString()
+            groupId: chatId.toString(),
+            isDeleted: false
         },
         include: {
             payers: {
@@ -142,18 +143,18 @@ export async function findTransactions_byGroupTransactionId(chatId: string, grou
     });
 }
 
-export async function deleteTransaction_byId(transactionId: string) {
-    return prisma.transaction.update({
-        where: {
-            id: transactionId
-        },
-        data: {
-            isDeleted: true
-        }
-    });
-}
-
 export async function deleteTransactions_byGroupTransactionId(chatId: string, groupTransactionId: number) {
+    // update all relevant userGroupBalances
+    const transactions = await findTransactions_byGroupTransactionId(chatId, groupTransactionId);
+    for (let transaction of transactions) {
+        for (let payee of transaction.payee) {
+            // TODO: Fix if I allow more than 1 payee
+            await updateUserGroupBalance_byUserIdGroupId(payee, chatId, transaction.totalAmount);
+        }
+        for (let payer of transaction.payers) {
+            await updateUserGroupBalance_byUserIdGroupId(payer.user, chatId, -payer.amount);
+        }
+    }
     return prisma.transaction.updateMany({
         where: {
             groupId: chatId.toString(),
