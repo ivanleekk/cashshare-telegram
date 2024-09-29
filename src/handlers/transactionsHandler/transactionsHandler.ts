@@ -1,24 +1,10 @@
 import { sendMessage } from "../../utils/telegramUtils";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient({});
+import {findTransactions_byGroupId} from "../../utils/prisma/prismaTransactionUtils";
 
 export async function transactionsHandler(chatId: string) {
     try {
         // get all transactions for the group
-        const transactions = await prisma.transaction.findMany({
-            where: {
-                groupId: chatId.toString()
-            },
-            include: {
-                payers: {
-                    include: {
-                        user: true
-                    }
-                },
-                payee: true
-            }
-        });
+        const transactions = await findTransactions_byGroupId(chatId);
         if (transactions.length === 0) {
             return sendMessage(chatId, "No transactions found!");
         }

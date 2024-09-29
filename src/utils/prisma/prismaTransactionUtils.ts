@@ -100,3 +100,67 @@ export async function createTransaction_Repayment(chatId: string, payee: User, t
         }
     });
 }
+
+export async function findTransaction_byId(transactionId: string) {
+    return prisma.transaction.findUnique({
+        where: {
+            id: transactionId
+        }
+    });
+}
+
+export async function findTransactions_byGroupId(chatId: string) {
+    return prisma.transaction.findMany({
+        where: {
+            groupId: chatId.toString()
+        },
+        include: {
+            payers: {
+                include: {
+                    user: true
+                }
+            },
+            payee: true
+        }
+    });
+}
+
+export async function findTransactions_byGroupTransactionId(chatId: string, groupTransactionId: number) {
+    return prisma.transaction.findMany({
+        where: {
+            groupId: chatId.toString(),
+            groupTransactionId: groupTransactionId
+        },
+        include: {
+            payers: {
+                include: {
+                    user: true
+                }
+            },
+            payee: true
+        }
+    });
+}
+
+export async function deleteTransaction_byId(transactionId: string) {
+    return prisma.transaction.update({
+        where: {
+            id: transactionId
+        },
+        data: {
+            isDeleted: true
+        }
+    });
+}
+
+export async function deleteTransactions_byGroupTransactionId(chatId: string, groupTransactionId: number) {
+    return prisma.transaction.updateMany({
+        where: {
+            groupId: chatId.toString(),
+            groupTransactionId: groupTransactionId
+        },
+        data: {
+            isDeleted: true
+        }
+    });
+}
