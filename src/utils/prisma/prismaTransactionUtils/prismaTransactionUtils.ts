@@ -3,7 +3,7 @@ import {User} from "@prisma/client";
 import {updateUserGroupBalance_byUserIdGroupId} from "../prismaUserGroupBalance/prismaUserGroupBalanceUtils";
 import {findUser_byUsername} from "../prismaUserUtils/prismaUserUtils";
 
-async function getNextTransactionId(chatId: string) {
+export async function getNextTransactionId(chatId: string) {
     // find the number of transactions in the group
     const transactions = await prisma.transaction.findMany({
         where: {

@@ -1,11 +1,22 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { prismaMock } from "../../../../libs/__mocks__/prismaMock";
 import { prisma } from "../../../../libs/prisma";
-import { createTransaction_Expense, createTransaction_Repayment, findTransaction_byId, findTransactions_byGroupId, findTransactions_byGroupTransactionId, deleteTransactions_byGroupTransactionId } from "./prismaTransactionUtils";
+import { getNextTransactionId, createTransaction_Expense, createTransaction_Repayment, findTransaction_byId, findTransactions_byGroupId, findTransactions_byGroupTransactionId, deleteTransactions_byGroupTransactionId } from "./prismaTransactionUtils";
+import {findUser_byUsername} from "../prismaUserUtils/prismaUserUtils";
 
 // Mock the prisma client
 vi.mock("../../../../libs/prisma", () => ({
     prisma: prismaMock,
+}));
+
+// Mock the prisma user utils
+vi.mock("../prismaUserUtils/prismaUserUtils", () => ({
+    findUser_byUsername: vi.fn(),
+}));
+
+// Mock the prisma group transaction utils
+vi.mock("./prismaTransactionUtils", () => ({
+    getNextTransactionId: vi.fn(),
 }));
 
 describe("prismaTransactionUtils", () => {
@@ -17,6 +28,8 @@ describe("prismaTransactionUtils", () => {
         it("should create a new expense transaction", async () => {
             const mockTransaction = { id: "1", type: "EXPENSE" };
             prismaMock.transaction.create.mockResolvedValue(mockTransaction);
+            findUser_byUsername.mockResolvedValue({ id: "payer1" });
+            getNextTransactionId.mockResolvedValue(1);
 
             const result = await createTransaction_Expense("chatId", { id: "payeeId" }, 100, "description", ["@payer1 50", "@payer2"], 25);
             expect(result).toEqual(mockTransaction);
