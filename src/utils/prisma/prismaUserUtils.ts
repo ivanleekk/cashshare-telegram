@@ -7,3 +7,11 @@ export async function findUser_byUsername(username: string) {
         }
     });
 }
+
+export async function createUser(username: string) {
+    return prisma.user.create({
+        data: {
+            username: username
+        }
+    });
+}

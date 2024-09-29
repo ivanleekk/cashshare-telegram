@@ -1,0 +1,44 @@
+import {prisma} from "../../../libs/prisma";
+import {User} from "@prisma/client";
+
+export async function findUserGroupBalance_byUserIdGroupId(user: User, chatId: string | number) {
+    return prisma.userGroupBalance.findFirst({
+        where: {
+            userId: user.id,
+            groupId: chatId.toString()
+        }
+    })
+}
+
+export async function createUserGroupBalance(user: User, chatId: string | number) {
+    return prisma.userGroupBalance.create({
+        data: {
+            user: {
+                connect: {
+                    id: user.id
+                }
+            },
+            group: {
+                connect: {
+                    id: chatId.toString()
+                }
+            }
+        }
+    })
+}
+
+export async function updateUserGroupBalance_byUserIdGroupId(user: User, chatId: string | number, amount: number) {
+    return prisma.userGroupBalance.update({
+        where: {
+            userId_groupId: {
+                userId: user.id,
+                groupId: chatId.toString()
+            }
+        },
+        data: {
+            balance: {
+                increment: amount
+            }
+        }
+    })
+}

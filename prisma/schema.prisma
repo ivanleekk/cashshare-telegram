@@ -20,7 +20,7 @@ generator erd {
 }
 
 enum TransactionType {
-  NEW_EXPENSE
+  EXPENSE
   REPAYMENT
 }
 
@@ -36,16 +36,18 @@ model User {
 }
 
 model Transaction {
-  id          String             @id @default(uuid())
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  totalAmount Float // Total amount of the transaction
-  payee       User[]             @relation("PayeeTransactions") // Payee can be one or more users
-  group       Group              @relation(fields: [groupId], references: [id])
-  groupId     String
-  description String
-  type        TransactionType // "expense" or "repayment"
-  payers      TransactionPayer[] // List of payers with their respective amounts
+  id                 String             @id @default(uuid())
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  totalAmount        Float // Total amount of the transaction
+  payee              User[]             @relation("PayeeTransactions") // Payee can be one or more users
+  group              Group              @relation(fields: [groupId], references: [id])
+  groupId            String
+  description        String
+  type               TransactionType // "expense" or "repayment"
+  payers             TransactionPayer[] // List of payers with their respective amounts
+  isDeleted          Boolean            @default(false)
+  groupTransactionId Int // ID of the transaction in the group
 }
 
 model TransactionPayer {
