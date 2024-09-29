@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "build": "npx tsc",
-    "test": "vitest",
+    "test": "vitest --reporter=junit",
     "deploy": "serverless deploy"
   },
   "repository": {
