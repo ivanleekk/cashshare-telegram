@@ -93,36 +93,9 @@ export async function addHandler(messageArray: string[], chatId: string, message
         }
 
         // add the expense to the UserGroupBalance table for each user without amount
-        const amountPerPerson = (amount - specifiedAmount) / payerListWithoutAmount.length;
-        for (const person of payerListWithoutAmount) {
-            const user = await findUser_byUsername(person);
-            if (!user) {
-                return sendMessage(chatId, "Error adding expense! Please try again.");
-            }
-            if (user.id === payee.id) {
-                // if the user is the payee, subtract the total amount from their balance
-                await updateUserGroupBalance_byUserIdGroupId(user, chatId, -amount);
-            }
-            // add the amount per person to the user's balance even if they are the payee
-            await updateUserGroupBalance_byUserIdGroupId(user, chatId, amountPerPerson);
-        }
+        const defaultAmountPerPerson = (amount - specifiedAmount) / payerListWithoutAmount.length;
 
-        // add the expense to the UserGroupBalance table for each user with amount
-        for (const person of payerListWithAmount) {
-            const user = await findUser_byUsername(person.split(" ")[0]);
-            if (!user) {
-                return sendMessage(chatId, "Error adding expense! Please try again.");
-            }
-            if (user.id === payee.id) {
-                // if the user is the payee, subtract the total amount from their balance
-                await updateUserGroupBalance_byUserIdGroupId(user, chatId, -amount);
-            }
-            // add the specified amount to the user's balance even if they are the payee
-            await updateUserGroupBalance_byUserIdGroupId(user, chatId, parseFloat(person.split(" ")[1]));
-        }
-
-
-        await createTransaction_Expense(chatId, payee, amount, description, payerList, amountPerPerson);
+        await createTransaction_Expense(chatId, payee, amount, description, payerList, defaultAmountPerPerson);
 
         return sendMessage(chatId, `Added expense of \$${amount} for ${description} for ${payersUsernames.join(", ")}!`);
     } catch (error: any) {
