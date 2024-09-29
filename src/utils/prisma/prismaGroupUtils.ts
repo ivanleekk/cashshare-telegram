@@ -27,3 +27,12 @@ export async function updateGroup_byId_withNewMembers(chatId: string, newMembers
         }
     });
 }
+
+export async function createGroup(chatId: string, chatTitle: string) {
+    return prisma.group.create({
+        data: {
+            id: chatId.toString(),
+            name: chatTitle,
+        }
+    });
+}
