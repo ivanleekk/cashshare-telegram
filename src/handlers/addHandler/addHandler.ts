@@ -14,6 +14,9 @@ export async function addHandler(messageArray: string[], chatId: string, message
             return sendMessage(chatId, "Invalid format! Please use /add [amount] [description] [people]");
         }
         const amount = parseFloat(messageArray[1]);
+        if (isNaN(amount)) {
+            return sendMessage(chatId, "Invalid amount! Please use /add [amount] [description] [people]");
+        }
         // find the index with @ prefix
         const firstUser: number = messageArray.findIndex((element: string) => element.startsWith("@"));
         const description = messageArray.slice(2, firstUser).join(" ");
@@ -93,7 +96,10 @@ export async function addHandler(messageArray: string[], chatId: string, message
         }
 
         // add the expense to the UserGroupBalance table for each user without amount
-        const defaultAmountPerPerson = (amount - specifiedAmount) / payerListWithoutAmount.length;
+        let defaultAmountPerPerson = 0;
+        if (payerListWithoutAmount.length > 0) {
+            defaultAmountPerPerson = (amount - specifiedAmount) / payerListWithoutAmount.length;
+        }
 
         await createTransaction_Expense(chatId, payee, amount, description, payerList, defaultAmountPerPerson);
 

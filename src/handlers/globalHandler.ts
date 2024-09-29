@@ -31,7 +31,8 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
                 "/pay - Pay back your friends \n" +
                 "/balance - Check the balance\n" +
                 "/groupbalance - Check the group balance\n" +
-                "/transactions - Check the transactions\n");
+                "/transactions - Check the transactions\n" +
+                "/delete - Delete a transaction\n");
         } else if (messageArray[0].startsWith("/add")) {
             await addHandler(messageArray, chatId, messageSender);
         } else if (messageArray[0].startsWith("/balance")) {
