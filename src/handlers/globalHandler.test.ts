@@ -7,6 +7,7 @@ import { addHandler } from './addHandler/addHandler';
 import { groupBalanceHandler, individualBalanceHandler } from './balanceHandler/balanceHandler';
 import { payHandler } from './payHandler/payHandler';
 import { transactionsHandler } from './transactionsHandler/transactionsHandler';
+import {simplifyHandler} from "./simplifyHandler/simplifyHandler";
 
 vi.mock('../utils/telegramUtils');
 vi.mock('./startHandler/startHandler');
@@ -14,6 +15,7 @@ vi.mock('./addHandler/addHandler');
 vi.mock('./balanceHandler/balanceHandler');
 vi.mock('./payHandler/payHandler');
 vi.mock('./transactionsHandler/transactionsHandler');
+vi.mock('./simplifyHandler/simplifyHandler');
 
 describe('globalHandler', () => {
     let event: APIGatewayProxyEvent;
@@ -124,6 +126,12 @@ describe('globalHandler', () => {
         event.body = JSON.stringify({ message: { chat: { id: 1 }, text: '/transactions', from: { username: 'testuser' } } });
         await globalHandler(event, context);
         expect(transactionsHandler).toHaveBeenCalledWith(1);
+    });
+
+    it('should call simplifyHandler for /simplify command', async () => {
+        event.body = JSON.stringify({ message: { chat: { id: 1 }, text: '/simplify', from: { username: 'testuser' } } });
+        await globalHandler(event, context);
+        expect(simplifyHandler).toHaveBeenCalledWith(1);
     });
 
     it('should call sendMessage for unrecognized command', async () => {
