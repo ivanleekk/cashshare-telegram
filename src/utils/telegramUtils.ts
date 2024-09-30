@@ -1,7 +1,5 @@
-import {Response} from "express";
 import axios from "axios";
-import {Prisma, PrismaClient} from "@prisma/client";
-let prisma = new PrismaClient();
+
 
 export async function sendMessage(chatId: string, text: string) {
     try {
@@ -21,12 +19,4 @@ export async function sendMessage(chatId: string, text: string) {
             body: JSON.stringify(error),
         };
     }
-}
-
-export async function findUser_byUsername(username: string) {
-    return prisma.user.findUnique({
-        where: {
-            username: username
-        }
-    });
 }

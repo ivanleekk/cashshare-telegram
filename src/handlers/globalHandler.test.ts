@@ -1,19 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 import { globalHandler } from './globalHandler';
-import { sendMessage } from '../utils/utils';
-import { startHandler } from './startHandler';
-import { addHandler } from './addHandler';
-import { groupBalanceHandler, individualBalanceHandler } from './BalanceHandler';
-import { payHandler } from './payHandler';
-import { transactionsHandler } from './transactionsHandler';
+import { sendMessage } from '../utils/telegramUtils';
+import { startHandler } from './startHandler/startHandler';
+import { addHandler } from './addHandler/addHandler';
+import { groupBalanceHandler, individualBalanceHandler } from './balanceHandler/balanceHandler';
+import { payHandler } from './payHandler/payHandler';
+import { transactionsHandler } from './transactionsHandler/transactionsHandler';
+import {simplifyHandler} from "./simplifyHandler/simplifyHandler";
 
-vi.mock('../utils/utils');
-vi.mock('./startHandler');
-vi.mock('./addHandler');
-vi.mock('./BalanceHandler');
-vi.mock('./payHandler');
-vi.mock('./transactionsHandler');
+vi.mock('../utils/telegramUtils');
+vi.mock('./startHandler/startHandler');
+vi.mock('./addHandler/addHandler');
+vi.mock('./balanceHandler/balanceHandler');
+vi.mock('./payHandler/payHandler');
+vi.mock('./transactionsHandler/transactionsHandler');
+vi.mock('./simplifyHandler/simplifyHandler');
 
 describe('globalHandler', () => {
     let event: APIGatewayProxyEvent;
@@ -124,6 +126,12 @@ describe('globalHandler', () => {
         event.body = JSON.stringify({ message: { chat: { id: 1 }, text: '/transactions', from: { username: 'testuser' } } });
         await globalHandler(event, context);
         expect(transactionsHandler).toHaveBeenCalledWith(1);
+    });
+
+    it('should call simplifyHandler for /simplify command', async () => {
+        event.body = JSON.stringify({ message: { chat: { id: 1 }, text: '/simplify', from: { username: 'testuser' } } });
+        await globalHandler(event, context);
+        expect(simplifyHandler).toHaveBeenCalledWith(1);
     });
 
     it('should call sendMessage for unrecognized command', async () => {

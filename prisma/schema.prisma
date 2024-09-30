@@ -15,8 +15,12 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
 enum TransactionType {
-  NEW_EXPENSE
+  EXPENSE
   REPAYMENT
 }
 
@@ -26,22 +30,33 @@ model User {
   updatedAt         DateTime           @updatedAt
   username          String             @unique
   transactionsPayee Transaction[]      @relation("PayeeTransactions")
-  transactionsPayer Transaction[]      @relation("PayerTransactions")
+  transactionPayers TransactionPayer[] // New relation to track per-payer amounts
   groups            Group[]            @relation("UserGroups")
   balances          UserGroupBalance[] // User balances across different groups
 }
 
 model Transaction {
-  id          String          @id @default(uuid())
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  amount      Float
-  payer       User[]          @relation("PayerTransactions")
-  payee       User[]          @relation("PayeeTransactions")
-  group       Group           @relation(fields: [groupId], references: [id])
-  groupId     String
-  description String
-  type        TransactionType // "expense" or "income"
+  id                 String             @id @default(uuid())
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  totalAmount        Float // Total amount of the transaction
+  payee              User[]             @relation("PayeeTransactions") // Payee can be one or more users
+  group              Group              @relation(fields: [groupId], references: [id])
+  groupId            String
+  description        String
+  type               TransactionType // "expense" or "repayment"
+  payers             TransactionPayer[] // List of payers with their respective amounts
+  isDeleted          Boolean            @default(false)
+  groupTransactionId Int // ID of the transaction in the group
+}
+
+model TransactionPayer {
+  id            String      @id @default(uuid())
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  transactionId String
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  amount        Float // Amount owed by the payer for this transaction
 }
 
 model Group {
