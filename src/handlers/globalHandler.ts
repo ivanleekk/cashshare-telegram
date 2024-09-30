@@ -6,6 +6,7 @@ import { groupBalanceHandler, individualBalanceHandler } from './balanceHandler/
 import { payHandler } from './payHandler/payHandler';
 import { transactionsHandler } from './transactionsHandler/transactionsHandler';
 import {deleteHandler} from "./deleteHandler/deleteHandler";
+import {simplifyHandler} from "./simplifyHandler/simplifyHandler";
 
 export const globalHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
     try {
@@ -45,6 +46,8 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
             await transactionsHandler(chatId);
         } else if (messageArray[0].startsWith("/delete")){
             await deleteHandler(messageArray, chatId);
+        } else if (messageArray[0].startsWith("/simplify")){
+            await simplifyHandler(chatId);
         } else {
             await sendMessage(chatId, '');
         }
