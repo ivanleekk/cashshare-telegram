@@ -96,6 +96,13 @@ describe('globalHandler', () => {
         event.body = JSON.stringify({ message: { chat: { id: 1 }, text: '/help', from: { username: 'testuser' } } });
         await globalHandler(event, context);
         expect(sendMessage).toHaveBeenCalledWith(1, expect.stringContaining('/start'));
+        expect(sendMessage).toHaveBeenCalledWith(1, expect.stringContaining('/add'));
+        expect(sendMessage).toHaveBeenCalledWith(1, expect.stringContaining('/balance'));
+        expect(sendMessage).toHaveBeenCalledWith(1, expect.stringContaining('/groupbalance'));
+        expect(sendMessage).toHaveBeenCalledWith(1, expect.stringContaining('/pay'));
+        expect(sendMessage).toHaveBeenCalledWith(1, expect.stringContaining('/transactions'));
+        expect(sendMessage).toHaveBeenCalledWith(1, expect.stringContaining('/delete'));
+        expect(sendMessage).toHaveBeenCalledWith(1, expect.stringContaining('/simplify'));
     });
 
     it('should call addHandler for /add command', async () => {
