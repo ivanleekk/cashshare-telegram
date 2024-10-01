@@ -28,8 +28,8 @@ npx prisma generate
 
 5. Run the bot using the following command:
 ```bash
-prisma generate
-serverless deploy
+dotenvx run --env-file=.env.production -- prisma generate
+dotenvx run --env-file=.env.production -- serverless deploy -s production
 ```
 
 5i. To run the bot on dev environment, use the following command:

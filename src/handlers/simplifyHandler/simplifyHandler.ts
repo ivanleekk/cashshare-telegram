@@ -16,6 +16,7 @@ export async function simplifyHandler(chatId: string) {
     let j = balances.length - 1;
     // starts with biggest debtor and biggest creditor, then changes to the next biggest debtor and creditor when
     // respective balance reaches 0
+    let resultString = "";
     while (i < j) {
         const creditor = balances[i];
         const debtor = balances[j];
@@ -27,7 +28,7 @@ export async function simplifyHandler(chatId: string) {
             j--;
             continue;
         }
-        await sendMessage(chatId, `${debtor.user.username} pays ${creditor.user.username} \$${amount}`);
+        resultString += `${debtor.user.username} pays ${creditor.user.username} \$${amount}\n`;
         if (creditor.balance === 0) {
             i++;
         }
@@ -35,5 +36,6 @@ export async function simplifyHandler(chatId: string) {
             j--;
         }
     }
-    return await sendMessage(chatId, "Simplified!");
+    resultString += 'Simplified!\n\nTIP: use this to keep track of payments!<blockquote>/pay [amount] [user]</blockquote>';
+    return await sendMessage(chatId, resultString);
 }
