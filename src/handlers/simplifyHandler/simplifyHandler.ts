@@ -28,7 +28,7 @@ export async function simplifyHandler(chatId: string) {
             j--;
             continue;
         }
-        resultString += `${debtor.user.username} pays ${creditor.user.username} \$${amount}\n`;
+        resultString += `${debtor.user.username} pays ${creditor.user.username} \$${amount.toFixed(2)}\n`;
         if (creditor.balance === 0) {
             i++;
         }

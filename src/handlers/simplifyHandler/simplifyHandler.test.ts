@@ -33,6 +33,6 @@ describe('simplifyHandler', () => {
 
         await simplifyHandler('testChatId');
 
-        expect(mockedSendMessage).toHaveBeenCalledWith('testChatId', '@user2 pays @user1 $30\n' + '@user3 pays @user1 $20\n' + 'Simplified!\n\nTIP: use this to keep track of payments!<blockquote>/pay [amount] [user]</blockquote>');
+        expect(mockedSendMessage).toHaveBeenCalledWith('testChatId', '@user2 pays @user1 $30.00\n' + '@user3 pays @user1 $20.00\n' + 'Simplified!\n\nTIP: use this to keep track of payments!<blockquote>/pay [amount] [user]</blockquote>');
     });
 });
