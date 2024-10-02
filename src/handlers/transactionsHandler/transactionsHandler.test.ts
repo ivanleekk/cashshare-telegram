@@ -3,7 +3,7 @@ import { transactionsHandler } from './transactionsHandler';
 import { sendMessage } from '../../utils/telegramUtils';
 import { PrismaClient } from '@prisma/client';
 
-vi.mock('../../utils/utils', () => ({
+vi.mock('../../utils/telegramUtils', () => ({
   sendMessage: vi.fn(),
 }));
 
@@ -35,6 +35,7 @@ describe('transactionsHandler', () => {
   it('should return a message with all transactions', async () => {
   prisma.transaction.findMany.mockResolvedValue([
     {
+      groupTransactionId: 1,
       type: 'REPAYMENT',
       payers: [{ user: { username: 'user1' } }],
       payee: [{ username: 'user2' }],
@@ -42,6 +43,7 @@ describe('transactionsHandler', () => {
       description: 'Lunch',
     },
     {
+      groupTransactionId: 2,
       type: 'EXPENSE',
       payers: [{ user: { username: 'user3' } }],
       payee: [{ username: 'user4' }],
@@ -53,7 +55,7 @@ describe('transactionsHandler', () => {
   await transactionsHandler(chatId);
   expect(sendMessage).toHaveBeenCalledWith(
     chatId,
-    '<b>Transactions:</b>\nType: REPAYMENT \nFrom: user1 To: user2 \nAmount: $10 Description: Lunch\n\nType: EXPENSE \nFrom: user3 To: user4 \nAmount: $20 Description: Dinner\n\n'
+    '<b>Transactions:</b>\nId: 1 Type: REPAYMENT \nFrom: user1 To: user2 \nAmount: $10 Description: Lunch\n\nId: 2 Type: EXPENSE \nFrom: user3 To: user4 \nAmount: $20 Description: Dinner\n\n'
   );
 });
 });
