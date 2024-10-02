@@ -40,6 +40,10 @@ export async function groupBalanceHandler(chatId: string) {
 
         const groupBalances = await findUserGroupBalances_byGroupId(chatId);
 
+        if (groupBalances.length < 1) {
+            return sendMessage(chatId, "There are no outstanding balances in the group");
+        }
+
         return sendMessage(chatId, `The group balance is \n${groupBalances.map((userGroupBalance) => 
     `${userGroupBalance.user.username} ${userGroupBalance.balance > 0 ? `owes \$${userGroupBalance.balance.toFixed(2)}` : `is owed \$${Math.abs(userGroupBalance.balance).toFixed(2)}`}`
 ).join("\n")}`);
