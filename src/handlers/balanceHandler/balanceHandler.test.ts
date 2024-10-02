@@ -41,7 +41,7 @@ describe("BalanceHandler", () => {
         });
 
         it("should return an error message if the user has no balance in the group", async () => {
-            (findUser_byUsername as vi.Mock).mockResolvedValue({ id: "userId" });
+            (findUser_byUsername as vi.Mock).mockResolvedValue({id: "userId"});
             (findUserGroupBalance_byUserIdGroupId as vi.Mock).mockResolvedValue(null);
 
             await individualBalanceHandler(chatId, messageSender);
@@ -50,8 +50,8 @@ describe("BalanceHandler", () => {
         });
 
         it("should return the user's balance in the group indicating they owe money", async () => {
-            (findUser_byUsername as vi.Mock).mockResolvedValue({ id: "userId" });
-            (findUserGroupBalance_byUserIdGroupId as vi.Mock).mockResolvedValue({ balance: 100 });
+            (findUser_byUsername as vi.Mock).mockResolvedValue({id: "userId"});
+            (findUserGroupBalance_byUserIdGroupId as vi.Mock).mockResolvedValue({balance: 100});
 
             await individualBalanceHandler(chatId, messageSender);
 
@@ -59,8 +59,8 @@ describe("BalanceHandler", () => {
         });
 
         it("should return the user's balance in the group indicating they are owed money", async () => {
-            (findUser_byUsername as vi.Mock).mockResolvedValue({ id: "userId" });
-            (findUserGroupBalance_byUserIdGroupId as vi.Mock).mockResolvedValue({ balance: -50 });
+            (findUser_byUsername as vi.Mock).mockResolvedValue({id: "userId"});
+            (findUserGroupBalance_byUserIdGroupId as vi.Mock).mockResolvedValue({balance: -50});
 
             await individualBalanceHandler(chatId, messageSender);
 
@@ -80,11 +80,11 @@ describe("BalanceHandler", () => {
         it("should return the group balance indicating members owe or are owed money", async () => {
             (findGroup_byId as vi.Mock).mockResolvedValue({
                 id: chatId,
-                members: [{ id: "user1", username: "user1" }, { id: "user2", username: "user2" }],
+                members: [{id: "user1", username: "user1"}, {id: "user2", username: "user2"}],
             });
             (findUserGroupBalances_byGroupId as vi.Mock).mockResolvedValue([
-                { user: { username: "user1" }, balance: 50 },
-                { user: { username: "user2" }, balance: -75 },
+                {user: {username: "user1"}, balance: 50},
+                {user: {username: "user2"}, balance: -75},
             ]);
 
             await groupBalanceHandler(chatId);
@@ -95,11 +95,11 @@ describe("BalanceHandler", () => {
         it("should handle members with no balance", async () => {
             (findGroup_byId as vi.Mock).mockResolvedValue({
                 id: chatId,
-                members: [{ id: "user1", username: "user1" }, { id: "user2", username: "user2" }],
+                members: [{id: "user1", username: "user1"}, {id: "user2", username: "user2"}],
             });
             (findUserGroupBalances_byGroupId as vi.Mock).mockResolvedValue([
-                { user: { username: "user1" }, balance: 0 },
-                { user: { username: "user2" }, balance: 75 },
+                {user: {username: "user1"}, balance: 0},
+                {user: {username: "user2"}, balance: 75},
             ]);
 
             await groupBalanceHandler(chatId);
@@ -110,13 +110,13 @@ describe("BalanceHandler", () => {
         it("should return a message if there are no balances in the group", async () => {
             (findGroup_byId as vi.Mock).mockResolvedValue({
                 id: chatId,
-                members: [{ id: "user1", username: "user1" }, { id: "user2", username: "user2" }],
+                members: [{id: "user1", username: "user1"}, {id: "user2", username: "user2"}],
             });
             (findUserGroupBalances_byGroupId as vi.Mock).mockResolvedValue([]);
 
             await groupBalanceHandler(chatId);
 
             expect(sendMessage).toHaveBeenCalledWith(chatId, "There are no outstanding balances in the group");
-        }
+        });
     });
 });
