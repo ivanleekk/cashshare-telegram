@@ -106,5 +106,17 @@ describe("BalanceHandler", () => {
 
             expect(sendMessage).toHaveBeenCalledWith(chatId, "The group balance is \nuser1 is owed \$0.00\nuser2 owes \$75.00");
         });
+
+        it("should return a message if there are no balances in the group", async () => {
+            (findGroup_byId as vi.Mock).mockResolvedValue({
+                id: chatId,
+                members: [{ id: "user1", username: "user1" }, { id: "user2", username: "user2" }],
+            });
+            (findUserGroupBalances_byGroupId as vi.Mock).mockResolvedValue([]);
+
+            await groupBalanceHandler(chatId);
+
+            expect(sendMessage).toHaveBeenCalledWith(chatId, "There are no outstanding balances in the group");
+        }
     });
 });
