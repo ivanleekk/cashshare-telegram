@@ -146,4 +146,16 @@ describe('globalHandler', () => {
         await globalHandler(event, context);
         expect(sendMessage).toHaveBeenCalledWith(1, '');
     });
+    
+    it('should call transactionsHandler for callback query with next', async () => {
+        event.body = JSON.stringify({ callback_query: { message: { chat: { id: 1 }, message_id: 1 }, data: 'next_0' } });
+        await globalHandler(event, context);
+        expect(transactionsHandler).toHaveBeenCalledWith(1, 1, 1, 10);
+    });
+    
+    it('should call transactionsHandler for callback query with prev', async () => {
+        event.body = JSON.stringify({ callback_query: { message: { chat: { id: 1 }, message_id: 1 }, data: 'prev_0' } });
+        await globalHandler(event, context);
+        expect(transactionsHandler).toHaveBeenCalledWith(1, 1, 1, 10);
+    });
 });
