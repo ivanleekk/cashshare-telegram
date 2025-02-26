@@ -7,10 +7,28 @@ import { payHandler } from './payHandler/payHandler';
 import { transactionsHandler } from './transactionsHandler/transactionsHandler';
 import {deleteHandler} from "./deleteHandler/deleteHandler";
 import {simplifyHandler} from "./simplifyHandler/simplifyHandler";
+const numberOfTransactions = 10;
 
 export const globalHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
     try {
         const body = JSON.parse(event.body || '{}');
+        if (body.callback_query) {
+            const chatId = body.callback_query.message.chat.id;
+            const data = body.callback_query.data;
+            const [action, page] = data.split('_');
+            let newPage = parseInt(page, 10);
+            if (action === 'prev') {
+                newPage = Math.max(newPage - 1, 0);
+            } else if (action === 'next') {
+                newPage += 1;
+            }
+            await transactionsHandler(chatId, newPage, body.callback_query.message.message_id, numberOfTransactions);
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ message: "Callback query processed successfully" }),
+            };
+        }
+        
         if (!body.message) {
             return {
                 statusCode: 400,
@@ -44,7 +62,7 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
         } else if (messageArray[0].startsWith("/pay")) {
             await payHandler(messageArray, chatId, messageSender);
         } else if (messageArray[0].startsWith("/transactions")) {
-            await transactionsHandler(chatId);
+            await transactionsHandler(chatId, null, null, numberOfTransactions);
         } else if (messageArray[0].startsWith("/delete")){
             await deleteHandler(messageArray, chatId);
         } else if (messageArray[0].startsWith("/simplify")){
