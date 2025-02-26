@@ -143,6 +143,28 @@ export async function findTransactions_byGroupTransactionId(chatId: string, grou
     });
 }
 
+export async function findTransactions_byGroupId_withLimit(chatId: string, limit: number, page: number) {
+    return prisma.transaction.findMany({
+        where: {
+            groupId: chatId.toString(),
+            isDeleted: false
+        },
+        take: limit,
+        skip: page * limit,
+        include: {
+            payers: {
+                include: {
+                    user: true
+                }
+            },
+            payee: true
+        },
+        orderBy: {
+            createdAt: 'asc'
+        }
+    });
+}
+
 export async function deleteTransactions_byGroupTransactionId(chatId: string, groupTransactionId: number) {
     // update all relevant userGroupBalances
     const transactions = await findTransactions_byGroupTransactionId(chatId, groupTransactionId);
