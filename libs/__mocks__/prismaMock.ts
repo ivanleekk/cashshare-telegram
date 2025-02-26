@@ -15,6 +15,8 @@ export const prismaMock = {
     },
     group: {
         findUnique: vi.fn(),
+        update: vi.fn(),
+        create: vi.fn(),
     },
     userGroupBalance: {
         findFirst: vi.fn(),
