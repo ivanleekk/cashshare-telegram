@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { transactionsHandler } from './transactionsHandler';
-import { sendMessage } from '../../utils/telegramUtils';
+import {sendMessage, sendMessage_withInlineKeyboard} from '../../utils/telegramUtils';
 import { PrismaClient } from '@prisma/client';
 
 vi.mock('../../utils/telegramUtils', () => ({
   sendMessage: vi.fn(),
+  sendMessage_withInlineKeyboard: vi.fn(),
 }));
 
 vi.mock('@prisma/client', () => {
@@ -28,7 +29,7 @@ describe('transactionsHandler', () => {
 
   it('should return a message if no transactions are found', async () => {
     prisma.transaction.findMany.mockResolvedValue([]);
-    await transactionsHandler(chatId);
+    await transactionsHandler(chatId, null, null, 10);
     expect(sendMessage).toHaveBeenCalledWith(chatId, 'No transactions found!');
   });
 
@@ -52,10 +53,11 @@ describe('transactionsHandler', () => {
     },
   ]);
 
-  await transactionsHandler(chatId);
-  expect(sendMessage).toHaveBeenCalledWith(
+  await transactionsHandler(chatId, null, null, 10);
+  expect(sendMessage_withInlineKeyboard).toHaveBeenCalledWith(
     chatId,
-    '<b>Transactions:</b>\nId: 1 Type: REPAYMENT \nFrom: user1 To: user2 \nAmount: $10 Description: Lunch\n\nId: 2 Type: EXPENSE \nFrom: user3 To: user4 \nAmount: $20 Description: Dinner\n\n'
+    '<b>Transactions:</b>\nId: 1 Type: REPAYMENT \nFrom: user1 To: user2 \nAmount: $10 Description: Lunch\n\nId: 2 Type: EXPENSE \nFrom: user3 To: user4 \nAmount: $20 Description: Dinner\n\n',
+      [[{text: "◀️", callback_data: `prev_0`}, {text: "▶️", callback_data: `next_0`}]]
   );
 });
 });

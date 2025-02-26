@@ -132,7 +132,7 @@ describe('globalHandler', () => {
     it('should call transactionsHandler for /transactions command', async () => {
         event.body = JSON.stringify({ message: { chat: { id: 1 }, text: '/transactions', from: { username: 'testuser' } } });
         await globalHandler(event, context);
-        expect(transactionsHandler).toHaveBeenCalledWith(1);
+        expect(transactionsHandler).toHaveBeenCalledWith(1, null, null, 10);
     });
 
     it('should call simplifyHandler for /simplify command', async () => {
