@@ -168,7 +168,7 @@ export async function findTransactions_byGroupId_withLimit(chatId: string, limit
 export async function deleteTransactions_byGroupTransactionId(chatId: string, groupTransactionId: number) {
     // update all relevant userGroupBalances
     const transactions = await findTransactions_byGroupTransactionId(chatId, groupTransactionId);
-    console.log(transactions);
+
     for (let transaction of transactions) {
         for (let payee of transaction.payee) {
             // TODO: Fix if I allow more than 1 payee
