@@ -12,6 +12,9 @@ export async function transactionsHandler(chatId: string, page: number | null, m
         }
         const transactions = await findTransactions_byGroupId_withLimit(chatId,numberOfTransactions, page);
         if (transactions.length === 0) {
+            if (messageId != null) {
+                return
+            }
             return sendMessage(chatId, "No transactions found!");
         }
         let message = "<b>Transactions:</b>\n";
