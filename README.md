@@ -4,6 +4,10 @@ A telegram bot that can be added to groups to share costs with people in the gro
 ## Deployment
 1. Clone the repository
 2. Install the requirements
+3. Send a get request in this format, where the NGROK URL is a hook that will activate your API
+```
+   https://api.telegram.org/bot{{TELEGRAM_BOT_TOKEN}}/setWebhook?url={{NGROK_URL}}&allowed_updates=[inline_query]&drop_pending_updates=True
+   ```
 3. Create a `.env` file with the following content:
 ```
 TELEGRAM_BOT_API_KEY="your-telegram-bot-api-key"

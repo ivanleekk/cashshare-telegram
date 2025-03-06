@@ -3,6 +3,16 @@ import {User} from "@prisma/client";
 import {updateUserGroupBalance_byUserIdGroupId} from "../prismaUserGroupBalance/prismaUserGroupBalanceUtils";
 import {findUser_byUsername} from "../prismaUserUtils/prismaUserUtils";
 
+export async function getTransactionPage(chatId: string, numberOfTransactions: number) {
+    const transactions = await prisma.transaction.findMany({
+        where: {
+            groupId: chatId.toString(),
+            isDeleted: false
+        }
+    });
+    return Math.floor((transactions.length - 1) / numberOfTransactions);
+}
+
 export async function getNextTransactionId(chatId: string) {
     // find the number of transactions in the group
     const transactions = await prisma.transaction.findMany({
@@ -143,9 +153,32 @@ export async function findTransactions_byGroupTransactionId(chatId: string, grou
     });
 }
 
+export async function findTransactions_byGroupId_withLimit(chatId: string, limit: number, page: number) {
+    return prisma.transaction.findMany({
+        where: {
+            groupId: chatId.toString(),
+            isDeleted: false
+        },
+        take: limit,
+        skip: page * limit,
+        include: {
+            payers: {
+                include: {
+                    user: true
+                }
+            },
+            payee: true
+        },
+        orderBy: {
+            createdAt: 'asc'
+        }
+    });
+}
+
 export async function deleteTransactions_byGroupTransactionId(chatId: string, groupTransactionId: number) {
     // update all relevant userGroupBalances
     const transactions = await findTransactions_byGroupTransactionId(chatId, groupTransactionId);
+
     for (let transaction of transactions) {
         for (let payee of transaction.payee) {
             // TODO: Fix if I allow more than 1 payee

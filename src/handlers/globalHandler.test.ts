@@ -132,7 +132,7 @@ describe('globalHandler', () => {
     it('should call transactionsHandler for /transactions command', async () => {
         event.body = JSON.stringify({ message: { chat: { id: 1 }, text: '/transactions', from: { username: 'testuser' } } });
         await globalHandler(event, context);
-        expect(transactionsHandler).toHaveBeenCalledWith(1);
+        expect(transactionsHandler).toHaveBeenCalledWith(1, null, null, 10);
     });
 
     it('should call simplifyHandler for /simplify command', async () => {
@@ -145,5 +145,17 @@ describe('globalHandler', () => {
         event.body = JSON.stringify({ message: { chat: { id: 1 }, text: '/unknown', from: { username: 'testuser' } } });
         await globalHandler(event, context);
         expect(sendMessage).toHaveBeenCalledWith(1, '');
+    });
+    
+    it('should call transactionsHandler for callback query with next', async () => {
+        event.body = JSON.stringify({ callback_query: { message: { chat: { id: 1 }, message_id: 1 }, data: 'next_0' } });
+        await globalHandler(event, context);
+        expect(transactionsHandler).toHaveBeenCalledWith(1, 1, 1, 10);
+    });
+    
+    it('should call transactionsHandler for callback query with prev', async () => {
+        event.body = JSON.stringify({ callback_query: { message: { chat: { id: 1 }, message_id: 1 }, data: 'prev_0' } });
+        await globalHandler(event, context);
+        expect(transactionsHandler).toHaveBeenCalledWith(1, 1, 1, 10);
     });
 });

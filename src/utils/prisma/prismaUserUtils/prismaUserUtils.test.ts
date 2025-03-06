@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { prismaMock } from "../../../../libs/__mocks__/prismaMock";
 import { prisma } from "../../../../libs/prisma";
-import { createTransaction_Expense, createTransaction_Repayment, findTransaction_byId, findTransactions_byGroupId, findTransactions_byGroupTransactionId, deleteTransactions_byGroupTransactionId } from "./prismaTransactionUtils";
+import { createTransaction_Expense, createTransaction_Repayment, findTransaction_byId, findTransactions_byGroupId, findTransactions_byGroupTransactionId, deleteTransactions_byGroupTransactionId } from "../prismaTransactionUtils/prismaTransactionUtils";
 
 // Mock the prisma client
 vi.mock("../../../../libs/prisma", () => ({
@@ -16,8 +16,10 @@ describe("prismaTransactionUtils", () => {
     describe("createTransaction_Expense", () => {
         it("should create a new expense transaction", async () => {
             const mockTransaction = { id: "1", type: "EXPENSE" };
+            prismaMock.transaction.findMany.mockResolvedValue([]);
             prismaMock.transaction.create.mockResolvedValue(mockTransaction);
             prismaMock.userGroupBalance.findFirst.mockResolvedValue({ userId: "payeeId", groupId: "chatId", balance: 0 });
+            prismaMock.user.findUnique.mockResolvedValue({ id: "payer1" });
 
             const result = await createTransaction_Expense("chatId", { id: "payeeId" }, 100, "description", ["@payer1 50", "@payer2"], 25);
             expect(result).toEqual(mockTransaction);
@@ -81,7 +83,9 @@ describe("prismaTransactionUtils", () => {
     describe("deleteTransactions_byGroupTransactionId", () => {
         it("should delete transactions by group transaction id", async () => {
             prismaMock.transaction.updateMany.mockResolvedValue({ count: 1 });
-
+            const mockTransactions = [{ id: "1", payee: [{ id: "payeeId" }], payers: [{ user: { id: "payerId" } }], groupId: "chatId", groupTransactionId: 1  }];
+            prismaMock.transaction.findMany.mockResolvedValue(mockTransactions);
+            
             const result = await deleteTransactions_byGroupTransactionId("chatId", 1);
             expect(result).toEqual({ count: 1 });
             expect(prisma.transaction.updateMany).toHaveBeenCalledWith({
