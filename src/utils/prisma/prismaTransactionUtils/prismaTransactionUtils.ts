@@ -3,6 +3,16 @@ import {User} from "@prisma/client";
 import {updateUserGroupBalance_byUserIdGroupId} from "../prismaUserGroupBalance/prismaUserGroupBalanceUtils";
 import {findUser_byUsername} from "../prismaUserUtils/prismaUserUtils";
 
+export async function getTransactionPage(chatId: string, numberOfTransactions: number) {
+    const transactions = await prisma.transaction.findMany({
+        where: {
+            groupId: chatId.toString(),
+            isDeleted: false
+        }
+    });
+    return Math.floor((transactions.length - 1) / numberOfTransactions);
+}
+
 export async function getNextTransactionId(chatId: string) {
     // find the number of transactions in the group
     const transactions = await prisma.transaction.findMany({
