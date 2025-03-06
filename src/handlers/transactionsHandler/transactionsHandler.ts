@@ -1,14 +1,14 @@
 import {sendMessage, sendMessage_withInlineKeyboard, updateMessage_withInlineKeyboard} from "../../utils/telegramUtils";
 import {
     findTransactions_byGroupId,
-    findTransactions_byGroupId_withLimit, getNextTransactionId
+    findTransactions_byGroupId_withLimit, getNextTransactionId, getTransactionPage
 } from "../../utils/prisma/prismaTransactionUtils/prismaTransactionUtils";
 
 export async function transactionsHandler(chatId: string, page: number | null, messageId: string | null, numberOfTransactions: number) {
     try {
         // get all transactions for the group
         if (page == null) {
-            page = Math.floor((await getNextTransactionId(chatId) - 1) / numberOfTransactions);
+            page = await getTransactionPage(chatId, numberOfTransactions);
         }
         const transactions = await findTransactions_byGroupId_withLimit(chatId,numberOfTransactions, page);
         if (transactions.length === 0) {
