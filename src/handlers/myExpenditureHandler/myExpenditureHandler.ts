@@ -16,7 +16,7 @@ export async function myExpenditureHandler(chatId: string, messageSender: string
         
         const expenditure = await getTotalExpenditure_byGroupIdUserId(chatId.toString(), user.id);
         
-        const expenditureMessage = `You have spent \$${expenditure.toFixed(2)}`;
+        const expenditureMessage = `A total of \$${expenditure.toFixed(2)} expenditure has been recorded for you in this group`;
         return sendMessage(chatId, `${expenditureMessage}`);
     } catch (error: any) {
         return sendMessage(chatId, `An error occurred: ${error.message}`);
