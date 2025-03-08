@@ -14,7 +14,7 @@ export async function myExpenditureHandler(chatId: string, messageSender: string
             return sendMessage(chatId, "You are not part of this group!");
         }
         
-        const expenditure = await getTotalExpenditure_byGroupIdUserId(chatId, user.id);
+        const expenditure = await getTotalExpenditure_byGroupIdUserId(chatId.toString(), user.id);
         
         const expenditureMessage = `You have spent \$${expenditure.toFixed(2)}`;
         return sendMessage(chatId, `${expenditureMessage}`);
