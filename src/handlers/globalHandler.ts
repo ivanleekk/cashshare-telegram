@@ -53,7 +53,8 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
                 "/groupbalance - Check the group balance\n" +
                 "/transactions - Check the transactions\n" +
                 "/delete - Delete a transaction\n" +
-                "/simplify - Simplify debt payments 😁\n");
+                "/simplify - Simplify debt payments 😁\n" +
+                "/myexpenditure - Check your expenditure in the group\n");
         } else if (messageArray[0].startsWith("/add")) {
             await addHandler(messageArray, chatId, messageSender);
         } else if (messageArray[0].startsWith("/balance")) {
