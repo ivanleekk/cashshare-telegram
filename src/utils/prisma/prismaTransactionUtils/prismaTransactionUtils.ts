@@ -10,7 +10,7 @@ export async function getTransactionPage(chatId: string, numberOfTransactions: n
             isDeleted: false
         }
     });
-    return Math.floor((transactions.length - 1) / numberOfTransactions);
+    return Math.max(Math.floor((transactions.length - 1) / numberOfTransactions), 0);
 }
 
 export async function getNextTransactionId(chatId: string) {
