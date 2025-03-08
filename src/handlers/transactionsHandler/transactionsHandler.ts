@@ -19,8 +19,7 @@ export async function transactionsHandler(chatId: string, page: number | null, m
         }
         let message = "<b>Transactions:</b>\n";
         transactions.forEach(transaction => {
-            console.log(transaction);
-            const payers = transaction.payers.map(payer => payer.user.username.toString()).join(", ");
+            const payers = transaction.payers.map(payer => payer.user.username.toString() + ` $${payer.amount}`).join(", ");
             const payees = transaction.payee.map(payee => payee.username.toString()).join(", ");
             message += `Id: ${transaction.groupTransactionId} Type: ${transaction.type} \nFrom: ${payers} To: ${payees} \nAmount: \$${transaction.totalAmount} Description: ${transaction.description}\n\n`;
         });
