@@ -19,15 +19,20 @@ export async function addHandler(messageArray: string[], chatId: string, message
         }
         // find the index with @ prefix
         const firstUser: number = messageArray.findIndex((element: string) => element.startsWith("@"));
-        const description = messageArray.slice(2, firstUser).join(" ");
+        const description = messageArray.slice(2, firstUser).join(" ").trim();
         const payers = messageArray.slice(firstUser);
         const payersUsernames = payers.filter((person: string) => person.startsWith("@"));
 
         // combine any payers are numbers to the payer before them
         for (let i = 0; i < payers.length; i++) {
             if (!payers[i].startsWith("@") && i > 0) {
+                // if payer does not start with @ and this is not the first index, combine with the payer before
+                // check if payers[i] is a number
+                if (isNaN(parseFloat(payers[i]))) {
+                    return sendMessage(chatId, "Invalid format! Please use /add [amount] [description] [people]");
+                }
                 payers[i - 1] += " " + payers[i];
-                payers.splice(i, 1);
+                payers.splice(i, 1); // remove the number
                 i--;
             }
         }
@@ -44,7 +49,9 @@ export async function addHandler(messageArray: string[], chatId: string, message
         if (!messageArray.includes(`@${messageSender}`)) {
             payersUsernames.unshift(`@${messageSender}`);
         }
-
+        
+        // trim whitespace from usernames
+        payerList = payerList.map((person: string) => person.trim());
 
         // remove duplicates from the payer list
         payerList = [...new Set(payerList)];
@@ -88,6 +95,7 @@ export async function addHandler(messageArray: string[], chatId: string, message
         const payerListWithAmount = [];
         for (const person of payerList) {
             if (person.includes(" ")) {
+                // if the person has an amount specified it will be in the format "@username amount"
                 payerListWithAmount.push(person);
                 specifiedAmount += parseFloat(person.split(" ")[1]);
             } else {
