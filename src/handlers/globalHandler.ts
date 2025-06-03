@@ -8,6 +8,7 @@ import { transactionsHandler } from './transactionsHandler/transactionsHandler';
 import {deleteHandler} from "./deleteHandler/deleteHandler";
 import {simplifyHandler} from "./simplifyHandler/simplifyHandler";
 import {myExpenditureHandler} from "./myExpenditureHandler/myExpenditureHandler";
+import { myTransactionsHandler } from './myTransactionsHandler/myTransactionsHandler';
 const numberOfTransactions = 10;
 
 export const globalHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
@@ -18,6 +19,24 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
             const data = body.callback_query.data;
             const [action, page] = data.split('_');
             let newPage = parseInt(page, 10);
+            if (action.startsWith('@')) {
+                // for mytransactions
+                const messageSplit = data.split('_');
+                const messageSender = messageSplit[0].substring(1);
+                const actionsplit = messageSplit[1];
+                newPage = parseInt(messageSplit[2], 10);
+                if (actionsplit === 'myprev') {
+                    newPage = Math.max(newPage - 1, 0);
+                } else if (actionsplit === 'mynext') {
+                    newPage += 1;
+                }
+                await myTransactionsHandler(chatId, newPage, body.callback_query.message.message_id, numberOfTransactions, messageSender);
+                return {
+                    statusCode: 200,
+                    body: JSON.stringify({ message: "Callback query processed successfully" }),
+                };
+            }
+            // for transactions
             if (action === 'prev') {
                 newPage = Math.max(newPage - 1, 0);
             } else if (action === 'next') {
@@ -71,6 +90,8 @@ export const globalHandler = async (event: APIGatewayProxyEvent, context: Contex
             await simplifyHandler(chatId);
         } else if (messageArray[0].startsWith("/myexpenditure")){
             await myExpenditureHandler(chatId, messageSender);
+        } else if (messageArray[0].startsWith("/mytransactions")) {
+            await myTransactionsHandler(chatId, null, null, numberOfTransactions, messageSender);
         } else {
             await sendMessage(chatId, '');
         }
