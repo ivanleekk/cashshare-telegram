@@ -49,6 +49,13 @@ export async function addHandler(messageArray: string[], chatId: string, message
         if (!messageArray.includes(`@${messageSender}`)) {
             payersUsernames.unshift(`@${messageSender}`);
         }
+
+         // check if the usernames are valid after @
+        for (const person of payerList) {
+            if (!person.startsWith("@") || person.length < 2) {
+                return sendMessage(chatId, "Invalid format! One or more usernames are invalid. Please use /add [amount] [description] [people]");
+            }
+        }
         
         // trim whitespace from usernames
         payerList = payerList.map((person: string) => person.trim());
