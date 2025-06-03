@@ -4,13 +4,30 @@ import {updateUserGroupBalance_byUserIdGroupId} from "../prismaUserGroupBalance/
 import {findUser_byUsername} from "../prismaUserUtils/prismaUserUtils";
 
 export async function getTransactionPage(chatId: string, numberOfTransactions: number) {
-    const transactions = await prisma.transaction.findMany({
+    const count = await prisma.transaction.count({
         where: {
             groupId: chatId.toString(),
             isDeleted: false
         }
     });
-    return Math.max(Math.floor((transactions.length - 1) / numberOfTransactions), 0);
+    return Math.max(Math.floor((count - 1) / numberOfTransactions), 0);
+}
+
+export async function getMyTransactionPage(chatId: string, numberOfTransactions: number, userId?: string) {
+    const count = await prisma.transaction.count({
+       where: {
+            groupId: chatId.toString(),
+            isDeleted: false,
+            payers: {
+                some: {
+                    user: {
+                        id: userId
+                    }
+                }
+            }
+        }
+    });
+  return Math.max(Math.floor((count - 1) / numberOfTransactions), 0);
 }
 
 export async function getNextTransactionId(chatId: string) {
@@ -182,7 +199,9 @@ export async function findTransactions_byGroupIdbyUserId_withLimit(chatId: strin
             isDeleted: false,
             payers: {
                 some: {
-                    userId: userId
+                    user: {
+                        id: userId
+                    }
                 }
             }
         },

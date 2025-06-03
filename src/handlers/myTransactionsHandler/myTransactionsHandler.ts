@@ -1,19 +1,23 @@
 import {sendMessage, sendMessage_withInlineKeyboard, updateMessage_withInlineKeyboard} from "../../utils/telegramUtils";
 import {
     findTransactions_byGroupId,
-    findTransactions_byGroupId_withLimit, findTransactions_byGroupIdbyUserId_withLimit, getNextTransactionId, getTransactionPage
+    findTransactions_byGroupId_withLimit, findTransactions_byGroupIdbyUserId_withLimit, getNextTransactionId, getMyTransactionPage
 } from "../../utils/prisma/prismaTransactionUtils/prismaTransactionUtils";
 import { findUser_byUsername } from "../../utils/prisma/prismaUserUtils/prismaUserUtils";
 
 export async function myTransactionsHandler(chatId: string, page: number | null, messageId: string | null, numberOfTransactions: number, messageSender: string) {
     try {
+        const user = await findUser_byUsername(`@${messageSender}`);
+        if (!user) {
+            return sendMessage(chatId, "User not found! After you have been involved in a transaction, you can use this command to see your transactions.");
+        }
         // get all transactions for the group
         if (page == null) {
-            page = await getTransactionPage(chatId, numberOfTransactions);
+            page = await getMyTransactionPage(chatId, numberOfTransactions, user.id);
         }
 
-        const user = await findUser_byUsername(`@${messageSender}`);
-        const mytransactions = await findTransactions_byGroupIdbyUserId_withLimit(chatId, user!.id, numberOfTransactions, page);
+        
+        const mytransactions = await findTransactions_byGroupIdbyUserId_withLimit(chatId, user.id, numberOfTransactions, page);
         if (mytransactions.length === 0) {
             if (messageId != null) {
                 return
